@@ -28,7 +28,7 @@ RUN apt-get update && \
       bash bash-completion ca-certificates coreutils curl dbus dbus-user-session dialog fastfetch \
       file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved \
       systemd-sysv tzdata udev wget xz-utils \
-      iproute2 iptables iputils-ping net-tools network-manager dnsutils rfkill wireless-regdb \
+      iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \
@@ -93,6 +93,10 @@ RUN if [ "$ENABLE_srf_ARG" = "true" ]; then \
 
 RUN mkdir -p /etc/lmi-native /lib/firmware && \
     if [ -d /tmp/lmi-firmware ]; then cp -a /tmp/lmi-firmware/. /lib/firmware/; fi && \
+    mkdir -p /lib/firmware/rtw88 && \
+    if [ ! -e /lib/firmware/rtw88/rtw8821c_fw.bin ]; then \
+      curl -fsSL -o /lib/firmware/rtw88/rtw8821c_fw.bin https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/rtw8821c_fw.bin; \
+    fi && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     cat > /etc/lmi-native.conf <<EOF
 LMI_USER=$USERNAME

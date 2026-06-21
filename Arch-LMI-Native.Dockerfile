@@ -25,7 +25,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       bash bash-completion ca-certificates coreutils curl dbus dialog fastfetch \
       file findutils gawk git grep jq kmod nano openssh procps-ng sed sudo systemd \
       tzdata wget xz zstd \
-      iproute2 iptables iputils net-tools networkmanager bind rfkill wireless-regdb \
+      iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb \
       bluez pipewire pipewire-alsa pipewire-pulse wireplumber pulseaudio \
       linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \

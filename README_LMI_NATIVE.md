@@ -11,6 +11,8 @@ Native targets:
 
 The native targets keep distribution Mesa/Freedreno packages for the Snapdragon GPU path. They intentionally do not install `mesa-for-android-container`, Termux-X11, Droidspaces services, Android audio forwarding, anland, or Android container groups.
 
+NetworkManager is installed with `wpa_supplicant` and `iw` so PCIe/USB Wi-Fi devices can be managed normally. Ubuntu and Debian native images also stage the Realtek `rtw88/rtw8821c_fw.bin` firmware used by common RTL8821CU USB Wi-Fi adapters.
+
 ## Build
 
 Use the GitHub Actions workflow `Build LMI Native RootFS` for normal builds. It builds one target or all native targets and publishes rootfs tarballs.
