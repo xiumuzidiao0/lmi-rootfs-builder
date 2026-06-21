@@ -26,8 +26,9 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
       bash bash-completion ca-certificates coreutils curl dbus dbus-user-session dialog fastfetch \
-      file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved \
+      file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved systemd-timesyncd \
       systemd-sysv tzdata udev wget xz-utils \
+      e2fsprogs \
       iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice-utils \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
@@ -104,7 +105,7 @@ LMI_USER=$USERNAME
 LMI_AUTOLOGIN=true
 EOF
 
-RUN systemctl enable lmi-native-firstboot.service ssh.service NetworkManager.service systemd-resolved.service || true && \
+RUN systemctl enable lmi-native-firstboot.service ssh.service NetworkManager.service systemd-resolved.service systemd-timesyncd.service || true && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then systemctl enable sddm.service || true; fi && \
     systemctl disable systemd-networkd-wait-online.service 2>/dev/null || true && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*

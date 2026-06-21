@@ -21,7 +21,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh
 
 RUN dnf install -y --setopt=install_weak_deps=False \
       bash bash-completion ca-certificates coreutils curl dbus-daemon dialog fastfetch \
-      file findutils gawk git grep jq kmod nano openssh-server procps-ng sed sudo systemd \
+      file findutils gawk git grep jq kmod nano openssh-server procps-ng sed sudo systemd e2fsprogs chrony \
       systemd-resolved systemd-udev tzdata wget xz zstd \
       iproute iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice-utils \
@@ -76,7 +76,7 @@ RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/nu
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     printf 'LMI_USER=%s\nLMI_AUTOLOGIN=true\n' "$USERNAME" > /etc/lmi-native.conf
 
-RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service || true && \
+RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service chronyd.service || true && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then systemctl enable sddm.service || true; fi && \
     dnf clean all && rm -rf /var/cache/dnf/* /tmp/*
 

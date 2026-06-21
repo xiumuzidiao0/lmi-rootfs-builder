@@ -13,6 +13,8 @@ The native targets keep distribution Mesa/Freedreno packages for the Snapdragon 
 
 NetworkManager is installed with `wpa_supplicant` and `iw` so PCIe/USB Wi-Fi devices can be managed normally. USB phone tethering is supported through NetworkManager plus `usbmuxd`/`libimobiledevice` for iPhone-style tethering. Ubuntu and Debian native images also stage the Realtek `rtw88/rtw8821c_fw.bin` firmware used by common RTL8821CU USB Wi-Fi adapters.
 
+The native first-boot service grows an ext4 root filesystem to fill the flashed userdata partition when `resize2fs` is available. The images include ext4 tools and a time synchronization service so package manager signature checks do not fail because the device clock starts too far in the past.
+
 ## Build
 
 Use the GitHub Actions workflow `Build LMI Native RootFS` for normal builds. It builds one target or all native targets and publishes rootfs tarballs.

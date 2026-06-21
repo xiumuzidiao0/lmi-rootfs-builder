@@ -52,9 +52,32 @@ mask_if_exists() {
   fi
 }
 
+grow_rootfs_if_possible() {
+  local source fstype
+
+  source=$(findmnt -n -o SOURCE / 2>/dev/null || true)
+  fstype=$(findmnt -n -o FSTYPE / 2>/dev/null || true)
+
+  if [ -z "$source" ] || [ -z "$fstype" ]; then
+    return 0
+  fi
+
+  case "$fstype" in
+    ext2|ext3|ext4)
+      if command -v resize2fs >/dev/null 2>&1; then
+        log "growing root filesystem on $source"
+        resize2fs "$source" >/dev/null 2>&1 || true
+      else
+        log "resize2fs not available; root filesystem was not grown"
+      fi
+      ;;
+  esac
+}
+
 log "configuring native boot defaults"
 
 hostnamectl set-hostname lmi-native >/dev/null 2>&1 || true
+grow_rootfs_if_possible
 
 mkdir -p /etc/systemd/logind.conf.d
 cat > /etc/systemd/logind.conf.d/99-lmi-native.conf <<'EOF'
@@ -83,6 +106,8 @@ enable_if_exists ssh.service
 enable_if_exists sshd.service
 enable_if_exists NetworkManager.service
 enable_if_exists systemd-resolved.service
+enable_if_exists systemd-timesyncd.service
+enable_if_exists chronyd.service
 enable_if_exists usbmuxd.service
 enable_if_exists sddm.service
 

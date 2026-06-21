@@ -23,7 +23,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
     pacman -Syu --noconfirm && \
     pacman -S --noconfirm --needed \
       bash bash-completion ca-certificates coreutils curl dbus dialog fastfetch \
-      file findutils gawk git grep jq kmod nano openssh procps-ng sed sudo systemd \
+      file findutils gawk git grep jq kmod nano openssh procps-ng sed sudo systemd e2fsprogs \
       tzdata wget xz zstd \
       iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice \
@@ -80,7 +80,7 @@ RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/nu
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     printf 'LMI_USER=%s\nLMI_AUTOLOGIN=true\n' "$USERNAME" > /etc/lmi-native.conf
 
-RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service || true && \
+RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service systemd-timesyncd.service || true && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then systemctl enable sddm.service || true; fi && \
     rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/* /tmp/*
 
