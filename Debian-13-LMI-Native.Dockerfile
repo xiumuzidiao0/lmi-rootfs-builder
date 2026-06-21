@@ -35,7 +35,7 @@ RUN apt-get update && \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
-        sddm kde-plasma-desktop plasma-workspace plasma-workspace-wayland powerdevil kscreen plasma-pa \
+        sddm kde-plasma-desktop plasma-workspace powerdevil kscreen plasma-pa \
         polkit-kde-agent-1 kwin-x11 xserver-xorg dbus-x11 x11-xserver-utils \
         dolphin konsole kate kinfocenter ark systemsettings kde-config-screenlocker kio-extras \
         desktop-base upower; \
