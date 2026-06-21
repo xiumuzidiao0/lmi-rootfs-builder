@@ -83,6 +83,7 @@ enable_if_exists ssh.service
 enable_if_exists sshd.service
 enable_if_exists NetworkManager.service
 enable_if_exists systemd-resolved.service
+enable_if_exists usbmuxd.service
 enable_if_exists sddm.service
 
 disable_if_exists systemd-networkd-wait-online.service

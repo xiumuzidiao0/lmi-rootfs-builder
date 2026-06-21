@@ -29,6 +29,7 @@ RUN apt-get update && \
       file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved \
       systemd-sysv tzdata udev wget xz-utils \
       iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
+      usbutils usbmuxd libimobiledevice-utils \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \

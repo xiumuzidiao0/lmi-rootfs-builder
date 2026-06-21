@@ -24,6 +24,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
       file findutils gawk git grep jq kmod nano openssh-server procps-ng sed sudo systemd \
       systemd-resolved systemd-udev tzdata wget xz zstd \
       iproute iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill wireless-regdb \
+      usbutils usbmuxd libimobiledevice-utils \
       bluez pipewire pipewire-alsa pipewire-pulseaudio wireplumber pulseaudio-utils \
       linux-firmware google-noto-cjk-fonts google-noto-emoji-color-fonts \
       mesa-dri-drivers mesa-vulkan-drivers glx-utils vulkan-tools && \
