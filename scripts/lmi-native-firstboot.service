@@ -1,0 +1,13 @@
+[Unit]
+Description=LMI native rootfs first boot setup
+After=local-fs.target
+Before=display-manager.service sddm.service
+ConditionPathExists=!/var/lib/lmi-native-firstboot.done
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/lmi-native.conf
+ExecStart=/usr/local/sbin/lmi-native-firstboot
+
+[Install]
+WantedBy=multi-user.target

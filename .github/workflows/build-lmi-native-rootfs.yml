@@ -1,0 +1,234 @@
+name: Build LMI Native RootFS
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_target:
+        description: Distribution rootfs to build
+        required: true
+        type: choice
+        default: Ubuntu-26-LMI-Native
+        options:
+          - Ubuntu-26-LMI-Native
+          - Debian-13-LMI-Native
+          - Arch-LMI-Native
+          - Fedora-43-LMI-Native
+          - all
+      custom_username:
+        description: Default user
+        required: true
+        type: string
+        default: xmzd
+      password:
+        description: Default password for root and user
+        required: true
+        type: string
+        default: "1"
+      build_kde:
+        description: KDE profile
+        required: true
+        type: choice
+        default: conc
+        options:
+          - conc
+          - min
+          - false
+      enable_zh_tz:
+        description: Chinese locale and Asia/Shanghai timezone
+        required: true
+        type: boolean
+        default: true
+      enable_srf:
+        description: Install Fcitx5 input method
+        required: true
+        type: boolean
+        default: true
+      enable_kfgj:
+        description: Install development toolchain
+        required: true
+        type: boolean
+        default: false
+      enable_zip:
+        description: Install archive tools
+        required: true
+        type: boolean
+        default: true
+      enable_docker:
+        description: Install Docker packages inside rootfs
+        required: true
+        type: boolean
+        default: false
+      enable_tmoe:
+        description: Install tmoe helper
+        required: true
+        type: boolean
+        default: false
+      create_ext4:
+        description: Also create ext4 and sparse userdata images
+        required: true
+        type: boolean
+        default: false
+      ext4_size:
+        description: ext4 image size when create_ext4 is enabled
+        required: true
+        type: string
+        default: 12G
+      base_image:
+        description: Optional base image override, for example mirror.gcr.io/library/ubuntu:26.04
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lmi-native-rootfs-${{ github.ref }}-${{ github.event.inputs.build_target }}
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      build_id: ${{ steps.meta.outputs.build_id }}
+      build_date: ${{ steps.meta.outputs.build_date }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: matrix
+        name: Resolve build matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${{ github.event.inputs.build_target }}"
+          if [ "$target" = "all" ]; then
+            jq -n -c '[
+              "Ubuntu-26-LMI-Native",
+              "Debian-13-LMI-Native",
+              "Arch-LMI-Native",
+              "Fedora-43-LMI-Native"
+            ]' > matrix.json
+          else
+            jq -n -c --arg target "$target" '[$target]' > matrix.json
+          fi
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+
+      - id: meta
+        name: Prepare build metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
+          echo "build_id=lmi-native-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: setup
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install image tools
+        if: ${{ github.event.inputs.create_ext4 == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends e2fsprogs android-sdk-libsparse-utils
+
+      - name: Build rootfs
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          BUILD_ID: ${{ needs.setup.outputs.build_id }}
+          BUILD_KDE: ${{ github.event.inputs.build_kde }}
+          ENABLE_ZH_TZ: ${{ github.event.inputs.enable_zh_tz }}
+          ENABLE_KFGJ: ${{ github.event.inputs.enable_kfgj }}
+          ENABLE_ZIP: ${{ github.event.inputs.enable_zip }}
+          ENABLE_DOCKER: ${{ github.event.inputs.enable_docker }}
+          ENABLE_SRF: ${{ github.event.inputs.enable_srf }}
+          ENABLE_TMOE: ${{ github.event.inputs.enable_tmoe }}
+          USERNAME: ${{ github.event.inputs.custom_username }}
+          PASSWORD: ${{ github.event.inputs.password }}
+          CREATE_EXT4: ${{ github.event.inputs.create_ext4 }}
+          EXT4_SIZE: ${{ github.event.inputs.ext4_size }}
+          BASE_IMAGE: ${{ github.event.inputs.base_image }}
+          BUILDER: default
+        run: |
+          set -euo pipefail
+          chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-native-firstboot.sh
+
+          args=(
+            -i "${TARGET}.Dockerfile"
+            -v "$BUILD_ID"
+            -K "$BUILD_KDE"
+            -g "$ENABLE_ZH_TZ"
+            -d "$ENABLE_KFGJ"
+            -e "$ENABLE_ZIP"
+            -f "$ENABLE_DOCKER"
+            -h "$ENABLE_SRF"
+            -j "$ENABLE_TMOE"
+            -u "$USERNAME"
+            -p "$PASSWORD"
+          )
+
+          if [ -n "$BASE_IMAGE" ]; then
+            args+=(-B "$BASE_IMAGE")
+          fi
+
+          if [ "$CREATE_EXT4" = "true" ]; then
+            args+=(-s "$EXT4_SIZE")
+          fi
+
+          ./build_rootfs-lmi-native.sh "${args[@]}"
+
+      - name: Upload rootfs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-rootfs
+          path: |
+            *.tar.xz
+            *.ext4.img
+            *.sparse.img
+          if-no-files-found: error
+          retention-days: 3
+
+  release:
+    needs:
+      - setup
+      - build
+    if: ${{ !cancelled() && needs.setup.result == 'success' && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*-rootfs"
+          merge-multiple: true
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release_assets
+          find . -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.ext4.img' -o -name '*.sparse.img' \) -exec mv -v {} release_assets/ \;
+          test "$(find release_assets -type f | wc -l)" -gt 0
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.setup.outputs.build_id }}
+          name: LMI Native RootFS ${{ needs.setup.outputs.build_id }}
+          files: release_assets/*
+          body: |
+            LMI native rootfs automatic build.
+
+            Build date: ${{ needs.setup.outputs.build_date }}
+            Build target: ${{ github.event.inputs.build_target }}
+            User: ${{ github.event.inputs.custom_username }}
+            KDE profile: ${{ github.event.inputs.build_kde }}
+            Native Mesa/Freedreno: distribution Mesa packages are included.
+            Ext4 image: ${{ github.event.inputs.create_ext4 }}

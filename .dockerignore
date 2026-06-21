@@ -1,0 +1,8 @@
+.git
+.github
+*.tar
+*.tar.xz
+*.img
+*.sparse.img
+release_assets
+custom-*-rootfs.tar
