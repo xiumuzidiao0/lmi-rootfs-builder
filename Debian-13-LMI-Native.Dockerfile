@@ -32,7 +32,7 @@ RUN apt-get update && \
       e2fsprogs \
       iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice-utils \
-      bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
+      bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
       firmware-linux firmware-linux-free firmware-linux-nonfree firmware-qcom-soc firmware-atheros zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
