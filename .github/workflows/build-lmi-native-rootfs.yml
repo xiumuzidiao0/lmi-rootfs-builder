@@ -214,7 +214,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release_assets
-          find . -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.ext4.img' -o -name '*.sparse.img' \) -exec mv -v {} release_assets/ \;
+          find . -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.sparse.img' \) -exec mv -v {} release_assets/ \;
           test "$(find release_assets -type f | wc -l)" -gt 0
 
       - name: Create release
@@ -232,3 +232,4 @@ jobs:
             KDE profile: ${{ github.event.inputs.build_kde }}
             Native Mesa/Freedreno: distribution Mesa packages are included.
             Ext4 image: ${{ github.event.inputs.create_ext4 }}
+            Raw ext4 images are kept as short-lived workflow artifacts only because GitHub Releases reject assets larger than 2 GiB.
