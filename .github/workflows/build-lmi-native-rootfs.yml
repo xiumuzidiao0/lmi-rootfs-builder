@@ -138,7 +138,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends e2fsprogs android-sdk-libsparse-utils
+          sudo apt-get install -y --no-install-recommends e2fsprogs android-sdk-libsparse-utils rsync
 
       - name: Build rootfs
         shell: bash

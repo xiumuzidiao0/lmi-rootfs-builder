@@ -11,6 +11,7 @@ OUT_IMG=$2
 SIZE=$3
 SPARSE_IMG="${OUT_IMG%.img}.sparse.img"
 MNT=
+STAGING=
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "This script must run as root because it mounts a loopback ext4 image." >&2
@@ -22,6 +23,7 @@ cleanup() {
     umount "$MNT"
   fi
   [ -n "${MNT:-}" ] && rm -rf "$MNT"
+  [ -n "${STAGING:-}" ] && rm -rf "$STAGING"
 }
 trap cleanup EXIT
 
@@ -30,13 +32,20 @@ truncate -s "$SIZE" "$OUT_IMG"
 mkfs.ext4 -F -L userdata "$OUT_IMG"
 
 MNT=$(mktemp -d)
+STAGING=$(mktemp -d)
 mount -o loop "$OUT_IMG" "$MNT"
 
 case "$ROOTFS_TAR" in
-  *.tar.xz) tar -xJpf "$ROOTFS_TAR" -C "$MNT" ;;
-  *.tar) tar -xpf "$ROOTFS_TAR" -C "$MNT" ;;
+  *.tar.xz) tar --numeric-owner -xJpf "$ROOTFS_TAR" -C "$STAGING" ;;
+  *.tar) tar --numeric-owner -xpf "$ROOTFS_TAR" -C "$STAGING" ;;
   *) echo "Unsupported rootfs archive: $ROOTFS_TAR" >&2; exit 1 ;;
 esac
+
+if command -v rsync >/dev/null 2>&1; then
+  rsync -aHAX --numeric-ids "$STAGING"/ "$MNT"/
+else
+  cp -a "$STAGING"/. "$MNT"/
+fi
 
 sync
 umount "$MNT"
