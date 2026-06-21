@@ -71,10 +71,16 @@ sudo apt-get install -y e2fsprogs android-sdk-libsparse-utils rsync
 sudo scripts/lmi-make-ext4-image.sh <target>.tar.xz <target>.ext4.img 16G
 ```
 
-From Windows PowerShell, you can call the WSL wrapper:
+From Windows CMD or PowerShell, you can call the WSL wrapper:
+
+```bat
+.\scripts\lmi-convert-rootfs-local.cmd -RootfsTar .\<target>.tar.xz -Size 16G
+```
+
+Or call the PowerShell script explicitly:
 
 ```powershell
-.\scripts\lmi-convert-rootfs-local.ps1 -RootfsTar .\<target>.tar.xz -Size 16G
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\lmi-convert-rootfs-local.ps1 -RootfsTar .\<target>.tar.xz -Size 16G
 ```
 
 The script automatically grows the requested ext4 size if the unpacked rootfs needs more space, then creates:
