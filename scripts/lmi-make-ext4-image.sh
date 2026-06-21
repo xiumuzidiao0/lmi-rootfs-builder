@@ -51,6 +51,8 @@ mkfs.ext4 -F -L userdata "$OUT_IMG"
 
 MNT=$(mktemp -d)
 mount -o loop "$OUT_IMG" "$MNT"
+chown root:root "$MNT"
+chmod 0755 "$MNT"
 
 if command -v rsync >/dev/null 2>&1; then
   rsync -aHAX --numeric-ids "$STAGING"/ "$MNT"/
@@ -58,13 +60,17 @@ else
   cp -a "$STAGING"/. "$MNT"/
 fi
 
+chown root:root "$MNT"
+chmod 0755 "$MNT"
+
 sync
 umount "$MNT"
 
 e2fsck -fy "$OUT_IMG" >/dev/null
-resize2fs -M "$OUT_IMG" >/dev/null || true
+resize2fs -M "$OUT_IMG"
 
 if command -v img2simg >/dev/null 2>&1; then
+  rm -f "$SPARSE_IMG"
   img2simg "$OUT_IMG" "$SPARSE_IMG"
   echo "Created $OUT_IMG and $SPARSE_IMG"
 else
