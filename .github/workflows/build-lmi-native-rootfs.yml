@@ -214,7 +214,17 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release_assets
-          find . -maxdepth 1 -type f \( -name '*.tar.xz' -o -name '*.sparse.img' \) -exec mv -v {} release_assets/ \;
+          find . -maxdepth 1 -type f -name '*.tar.xz' -exec mv -v {} release_assets/ \;
+          for image in *.sparse.img; do
+            [ -e "$image" ] || continue
+            size=$(stat -c '%s' "$image")
+            if [ "$size" -ge 2000000000 ]; then
+              split -b 1900M -d -a 2 "$image" "release_assets/${image}.part-"
+              sha256sum "$image" > "release_assets/${image}.sha256"
+            else
+              mv -v "$image" release_assets/
+            fi
+          done
           test "$(find release_assets -type f | wc -l)" -gt 0
 
       - name: Create release
@@ -233,3 +243,4 @@ jobs:
             Native Mesa/Freedreno: distribution Mesa packages are included.
             Ext4 image: ${{ github.event.inputs.create_ext4 }}
             Raw ext4 images are kept as short-lived workflow artifacts only because GitHub Releases reject assets larger than 2 GiB.
+            Sparse images larger than 2 GiB are split into .part-* files with a matching .sha256 file.
