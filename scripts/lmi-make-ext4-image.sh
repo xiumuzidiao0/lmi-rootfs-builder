@@ -28,18 +28,29 @@ cleanup() {
 trap cleanup EXIT
 
 rm -f "$OUT_IMG" "$SPARSE_IMG"
-truncate -s "$SIZE" "$OUT_IMG"
-mkfs.ext4 -F -L userdata "$OUT_IMG"
-
-MNT=$(mktemp -d)
 STAGING=$(mktemp -d)
-mount -o loop "$OUT_IMG" "$MNT"
 
 case "$ROOTFS_TAR" in
   *.tar.xz) tar --numeric-owner -xJpf "$ROOTFS_TAR" -C "$STAGING" ;;
   *.tar) tar --numeric-owner -xpf "$ROOTFS_TAR" -C "$STAGING" ;;
   *) echo "Unsupported rootfs archive: $ROOTFS_TAR" >&2; exit 1 ;;
 esac
+
+if command -v numfmt >/dev/null 2>&1; then
+  requested_bytes=$(numfmt --from=iec "$SIZE" 2>/dev/null || echo 0)
+  required_kib=$(du -sk "$STAGING" | awk '{print $1}')
+  min_bytes=$((required_kib * 1024 * 12 / 10 + 512 * 1024 * 1024))
+  if [ "$requested_bytes" -gt 0 ] && [ "$requested_bytes" -lt "$min_bytes" ]; then
+    echo "Requested image size $SIZE is too small for this rootfs; using ${min_bytes} bytes instead." >&2
+    SIZE=$min_bytes
+  fi
+fi
+
+truncate -s "$SIZE" "$OUT_IMG"
+mkfs.ext4 -F -L userdata "$OUT_IMG"
+
+MNT=$(mktemp -d)
+mount -o loop "$OUT_IMG" "$MNT"
 
 if command -v rsync >/dev/null 2>&1; then
   rsync -aHAX --numeric-ids "$STAGING"/ "$MNT"/

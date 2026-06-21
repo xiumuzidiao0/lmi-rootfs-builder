@@ -72,7 +72,7 @@ on:
         description: ext4 image size when create_ext4 is enabled
         required: true
         type: string
-        default: 12G
+        default: 16G
       base_image:
         description: Optional base image override, for example mirror.gcr.io/library/ubuntu:26.04
         required: false
