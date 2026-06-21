@@ -4,14 +4,21 @@ param(
 
   [string]$OutputImage = "",
   [string]$Size = "16G",
-  [string]$Distro = "Ubuntu-26.04"
+  [string]$Distro = "Ubuntu-26.04",
+  [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
 
 function Convert-ToWslPath([string]$Path) {
   $full = [System.IO.Path]::GetFullPath($Path)
-  return (wsl -d $Distro -- wslpath -a $full).Trim()
+  if ($full -match '^([A-Za-z]):\\(.*)$') {
+    $drive = $Matches[1].ToLowerInvariant()
+    $rest = $Matches[2].Replace('\', '/')
+    return "/mnt/$drive/$rest"
+  }
+
+  throw "Only local drive paths like D:\path\file are supported: $Path"
 }
 
 function Convert-ToBashSingleQuoted([string]$Value) {
@@ -41,5 +48,13 @@ Write-Host "Converting rootfs tarball to ext4 image..."
 Write-Host "Input : $RootfsTar"
 Write-Host "Output: $OutputImage"
 Write-Host "Size  : $Size"
+
+if ($DryRun) {
+  Write-Host "WSL input : $wslTar"
+  Write-Host "WSL output: $wslOut"
+  Write-Host "WSL script: $wslScript"
+  Write-Host "Command   : $command"
+  exit 0
+}
 
 wsl -d $Distro -u root -- bash -lc $command
