@@ -33,7 +33,7 @@ RUN apt-get update && \
       usbutils usbmuxd libimobiledevice-utils \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
-      fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \
+      fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
         sddm kde-plasma-desktop plasma-session-x11 plasma-workspace bluedevil plasma-nm powerdevil kscreen plasma-pa \

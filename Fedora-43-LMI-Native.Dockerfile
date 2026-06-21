@@ -27,7 +27,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
       usbutils usbmuxd libimobiledevice-utils \
       bluez pipewire pipewire-alsa pipewire-pulseaudio wireplumber pulseaudio-utils \
       linux-firmware google-noto-cjk-fonts google-noto-emoji-color-fonts \
-      mesa-dri-drivers mesa-vulkan-drivers glx-utils vulkan-tools && \
+      mesa-dri-drivers mesa-vulkan-drivers glx-utils vulkan-tools v4l-utils && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       dnf install -y --setopt=install_weak_deps=False \
         sddm plasma-desktop plasma-workspace plasma-workspace-x11 bluedevil plasma-nm kwin kwin-x11 powerdevil kscreen plasma-pa \

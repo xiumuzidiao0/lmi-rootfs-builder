@@ -28,7 +28,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice \
       bluez pipewire pipewire-alsa pipewire-pulse wireplumber pulseaudio \
-      linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno && \
+      linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno v4l-utils && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       pacman -S --noconfirm --needed \
         sddm plasma-desktop plasma-workspace plasma-x11-session bluedevil plasma-nm kwin kwin-x11 powerdevil kscreen plasma-pa \
