@@ -31,7 +31,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       pacman -S --noconfirm --needed \
-        sddm plasma-desktop plasma-workspace plasma-x11-session bluedevil kwin kwin-x11 powerdevil kscreen plasma-pa \
+        sddm plasma-desktop plasma-workspace plasma-x11-session bluedevil plasma-nm kwin kwin-x11 powerdevil kscreen plasma-pa \
         polkit-kde-agent xorg-server xorg-xrandr xorg-xset xorg-xrdb xorg-xhost \
         dolphin konsole kate kinfocenter ark systemsettings kscreenlocker kio-extras upower; \
     fi && \

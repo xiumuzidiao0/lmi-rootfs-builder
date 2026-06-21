@@ -30,7 +30,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
       mesa-dri-drivers mesa-vulkan-drivers glx-utils vulkan-tools && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       dnf install -y --setopt=install_weak_deps=False \
-        sddm plasma-desktop plasma-workspace plasma-workspace-x11 bluedevil kwin kwin-x11 powerdevil kscreen plasma-pa \
+        sddm plasma-desktop plasma-workspace plasma-workspace-x11 bluedevil plasma-nm kwin kwin-x11 powerdevil kscreen plasma-pa \
         polkit-kde dbus-x11 xorg-x11-server-Xorg xrandr xset xrdb xhost \
         dolphin konsole kate kinfocenter ark systemsettings kscreenlocker kio-extras upower; \
     fi && \
