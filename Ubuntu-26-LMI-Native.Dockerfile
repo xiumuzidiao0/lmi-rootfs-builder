@@ -30,7 +30,7 @@ RUN apt-get update && \
       systemd-sysv tzdata udev wget xz-utils \
       e2fsprogs \
       iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
-      usbutils usbmuxd libimobiledevice-utils \
+      usbutils usbmuxd libimobiledevice-utils adb fastboot android-sdk-platform-tools-common \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
