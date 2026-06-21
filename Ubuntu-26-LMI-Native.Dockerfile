@@ -36,7 +36,7 @@ RUN apt-get update && \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
-        sddm kde-plasma-desktop plasma-session-x11 plasma-workspace powerdevil kscreen plasma-pa \
+        sddm kde-plasma-desktop plasma-session-x11 plasma-workspace bluedevil powerdevil kscreen plasma-pa \
         polkit-kde-agent-1 kwin-x11 xserver-xorg dbus-x11 x11-xserver-utils \
         dolphin konsole kate kinfocenter ark systemsettings kde-config-screenlocker kio-extras \
         kubuntu-settings-desktop kubuntu-wallpapers upower; \
@@ -98,6 +98,13 @@ RUN mkdir -p /etc/lmi-native /lib/firmware && \
     mkdir -p /lib/firmware/rtw88 && \
     if [ ! -e /lib/firmware/rtw88/rtw8821c_fw.bin ]; then \
       curl -fsSL -o /lib/firmware/rtw88/rtw8821c_fw.bin https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtw88/rtw8821c_fw.bin; \
+    fi && \
+    mkdir -p /lib/firmware/rtl_bt && \
+    if [ ! -e /lib/firmware/rtl_bt/rtl8821c_fw.bin ]; then \
+      curl -fsSL -o /lib/firmware/rtl_bt/rtl8821c_fw.bin https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt/rtl8821c_fw.bin; \
+    fi && \
+    if [ ! -e /lib/firmware/rtl_bt/rtl8821c_config.bin ]; then \
+      curl -fsSL -o /lib/firmware/rtl_bt/rtl8821c_config.bin https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt/rtl8821c_config.bin; \
     fi && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     cat > /etc/lmi-native.conf <<EOF
