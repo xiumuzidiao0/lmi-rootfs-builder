@@ -63,16 +63,6 @@ on:
         required: true
         type: boolean
         default: false
-      create_ext4:
-        description: Also create ext4 and sparse userdata images
-        required: true
-        type: boolean
-        default: false
-      ext4_size:
-        description: ext4 image size when create_ext4 is enabled
-        required: true
-        type: string
-        default: 16G
       base_image:
         description: Optional base image override, for example mirror.gcr.io/library/ubuntu:26.04
         required: false
@@ -132,14 +122,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install image tools
-        if: ${{ github.event.inputs.create_ext4 == 'true' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends e2fsprogs android-sdk-libsparse-utils rsync
-
       - name: Build rootfs
         shell: bash
         env:
@@ -154,8 +136,6 @@ jobs:
           ENABLE_TMOE: ${{ github.event.inputs.enable_tmoe }}
           USERNAME: ${{ github.event.inputs.custom_username }}
           PASSWORD: ${{ github.event.inputs.password }}
-          CREATE_EXT4: ${{ github.event.inputs.create_ext4 }}
-          EXT4_SIZE: ${{ github.event.inputs.ext4_size }}
           BASE_IMAGE: ${{ github.event.inputs.base_image }}
           BUILDER: default
         run: |
@@ -180,10 +160,6 @@ jobs:
             args+=(-B "$BASE_IMAGE")
           fi
 
-          if [ "$CREATE_EXT4" = "true" ]; then
-            args+=(-s "$EXT4_SIZE")
-          fi
-
           ./build_rootfs-lmi-native.sh "${args[@]}"
 
       - name: Upload rootfs artifact
@@ -192,8 +168,6 @@ jobs:
           name: ${{ matrix.target }}-rootfs
           path: |
             *.tar.xz
-            *.ext4.img
-            *.sparse.img
           if-no-files-found: error
           retention-days: 3
 
@@ -215,16 +189,6 @@ jobs:
           set -euo pipefail
           mkdir -p release_assets
           find . -maxdepth 1 -type f -name '*.tar.xz' -exec mv -v {} release_assets/ \;
-          for image in *.sparse.img; do
-            [ -e "$image" ] || continue
-            size=$(stat -c '%s' "$image")
-            if [ "$size" -ge 2000000000 ]; then
-              split -b 1900M -d -a 2 "$image" "release_assets/${image}.part-"
-              sha256sum "$image" > "release_assets/${image}.sha256"
-            else
-              mv -v "$image" release_assets/
-            fi
-          done
           test "$(find release_assets -type f | wc -l)" -gt 0
 
       - name: Create release
@@ -241,6 +205,4 @@ jobs:
             User: ${{ github.event.inputs.custom_username }}
             KDE profile: ${{ github.event.inputs.build_kde }}
             Native Mesa/Freedreno: distribution Mesa packages are included.
-            Ext4 image: ${{ github.event.inputs.create_ext4 }}
-            Raw ext4 images are kept as short-lived workflow artifacts only because GitHub Releases reject assets larger than 2 GiB.
-            Sparse images larger than 2 GiB are split into .part-* files with a matching .sha256 file.
+            This workflow publishes rootfs tarballs only. Convert tar.xz to ext4/sparse images locally before flashing.

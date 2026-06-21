@@ -13,7 +13,7 @@ The native targets keep distribution Mesa/Freedreno packages for the Snapdragon 
 
 ## Build
 
-Use the GitHub Actions workflow `Build LMI Native RootFS` for normal builds. It can build one target or all native targets and publish a release artifact.
+Use the GitHub Actions workflow `Build LMI Native RootFS` for normal builds. It builds one target or all native targets and publishes rootfs tarballs.
 
 Local builds are mainly for debugging. Run from this directory in WSL or Linux with Docker buildx available:
 
@@ -40,7 +40,7 @@ Useful options:
 # override base image when Docker Hub is rate-limited
 ./build_rootfs-lmi-native.sh -i Arch-LMI-Native.Dockerfile -B mirror.gcr.io/library/archlinux:base
 
-# also create an ext4 image
+# local-only: also create an ext4 image
 ./build_rootfs-lmi-native.sh -i Ubuntu-26-LMI-Native.Dockerfile -v lmi -s 12G
 ```
 
@@ -50,7 +50,9 @@ The output tarball name is:
 <target>-rootfs-arm64-<date>-<version>.tar.xz
 ```
 
-If `-s` or `-E` is used, the helper also creates:
+GitHub Actions publishes only the tarball. This keeps CI reliable and avoids GitHub Release's 2 GiB per-asset limit.
+
+If `-s` or `-E` is used in a local build, the helper also creates:
 
 ```text
 <target>-rootfs-arm64-<date>-<version>.ext4.img
@@ -58,6 +60,31 @@ If `-s` or `-E` is used, the helper also creates:
 ```
 
 The sparse image is only produced when `img2simg` is installed.
+
+## Local Image Conversion
+
+Convert the release tarball to a userdata image locally in WSL or Linux:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y e2fsprogs android-sdk-libsparse-utils rsync
+sudo scripts/lmi-make-ext4-image.sh <target>.tar.xz <target>.ext4.img 16G
+```
+
+From Windows PowerShell, you can call the WSL wrapper:
+
+```powershell
+.\scripts\lmi-convert-rootfs-local.ps1 -RootfsTar .\<target>.tar.xz -Size 16G
+```
+
+The script automatically grows the requested ext4 size if the unpacked rootfs needs more space, then creates:
+
+```text
+<target>.ext4.img
+<target>.ext4.sparse.img
+```
+
+Use `16G` or larger for KDE desktop images. The sparse image is the one normally flashed with fastboot.
 
 ## Firmware Overlay
 
@@ -87,17 +114,11 @@ The generated rootfs does not apply DPMS or panel suspend workarounds. Display s
 
 ## Flashing
 
-For a direct userdata image:
+After local conversion:
 
 ```bash
 fastboot flash userdata <target>.ext4.sparse.img
 fastboot reboot
-```
-
-If you only built the tarball, create and populate an ext4 filesystem yourself or run:
-
-```bash
-sudo scripts/lmi-make-ext4-image.sh <target>.tar.xz <target>.ext4.img 12G
 ```
 
 Use a boot image known to work with the same rootfs layout. The rootfs builder does not replace boot image, device tree, kernel modules, or bootloader configuration.
