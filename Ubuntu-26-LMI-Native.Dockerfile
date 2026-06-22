@@ -45,7 +45,8 @@ RUN apt-get update && \
       apt-get install -y --no-install-recommends \
         plasma-systemmonitor kfind filelight glmark2 vkmark wayland-utils pciutils dmidecode \
         xdg-user-dirs dolphin-plugins ffmpegthumbs kdegraphics-thumbnailers kimageformat6-plugins \
-        plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse; \
+        plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse \
+        qtwayland5 guvcview qv4l2; \
     fi && \
     if [ "$ENABLE_srf_ARG" = "true" ]; then \
       apt-get install -y --no-install-recommends fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 fcitx5-frontend-qt6; \
