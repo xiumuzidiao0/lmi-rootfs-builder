@@ -27,8 +27,15 @@ Server/headless targets are available in the `Build LMI Server RootFS` workflow:
 - `Arch-LMI-Server`
 - `Fedora-42-LMI-Server`
 - `Fedora-43-LMI-Server`
+- `Alpine-3.20-LMI-Server`
+- `Alpine-3.22-LMI-Server`
+- `OpenSUSE-Leap-15.6-LMI-Server`
+- `OpenSUSE-Tumbleweed-LMI-Server`
+- `Mint-22-LMI-Server`
 
 The server workflow sets `BUILD_KDE=false` and disables Fcitx, while keeping native boot, networking, firmware overlay, SSH, and first-boot setup.
+
+Alpine and openSUSE are currently server/headless targets. Alpine uses OpenRC service setup, while openSUSE uses systemd. `Mint-22-LMI-Server` is an Ubuntu 24.04 compatibility target with Mint-style naming because Linux Mint does not provide a stable official arm64 Docker base image suitable for this workflow.
 
 The native targets keep distribution Mesa/Freedreno packages for the Snapdragon GPU path. They intentionally do not install `mesa-for-android-container`, Termux-X11, Droidspaces services, Android audio forwarding, anland, or Android container groups.
 
@@ -52,6 +59,8 @@ chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-n
 ./build_rootfs-lmi-native.sh -i Arch-LMI-Native.Dockerfile -v lmi
 ./build_rootfs-lmi-native.sh -i Fedora-43-LMI-Native.Dockerfile -v lmi
 ./build_rootfs-lmi-native.sh -i Fedora-43-LMI-Native.Dockerfile -B fedora:42 -v lmi
+./build_rootfs-lmi-native.sh -i Alpine-LMI-Server.Dockerfile -B alpine:3.22 -K false -h false -v lmi
+./build_rootfs-lmi-native.sh -i OpenSUSE-LMI-Server.Dockerfile -B opensuse/tumbleweed:latest -K false -h false -v lmi
 ```
 
 The workflow runs on `ubuntu-24.04-arm`, so the images are built natively for arm64. It does not need QEMU/binfmt for the normal GitHub build path.

@@ -16,6 +16,11 @@ on:
           - Arch-LMI-Server
           - Fedora-42-LMI-Server
           - Fedora-43-LMI-Server
+          - Alpine-3.20-LMI-Server
+          - Alpine-3.22-LMI-Server
+          - OpenSUSE-Leap-15.6-LMI-Server
+          - OpenSUSE-Tumbleweed-LMI-Server
+          - Mint-22-LMI-Server
           - all
       custom_username:
         description: Default user
@@ -89,7 +94,12 @@ jobs:
               "Debian-13-LMI-Server",
               "Arch-LMI-Server",
               "Fedora-42-LMI-Server",
-              "Fedora-43-LMI-Server"
+              "Fedora-43-LMI-Server",
+              "Alpine-3.20-LMI-Server",
+              "Alpine-3.22-LMI-Server",
+              "OpenSUSE-Leap-15.6-LMI-Server",
+              "OpenSUSE-Tumbleweed-LMI-Server",
+              "Mint-22-LMI-Server"
             ]' > matrix.json
           else
             jq -n -c --arg target "$target" '[$target]' > matrix.json
@@ -158,6 +168,24 @@ jobs:
               ;;
             Fedora-43-LMI-Server)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              ;;
+            Alpine-3.20-LMI-Server)
+              dockerfile="Alpine-LMI-Server.Dockerfile"
+              default_base="alpine:3.20"
+              ;;
+            Alpine-3.22-LMI-Server)
+              dockerfile="Alpine-LMI-Server.Dockerfile"
+              ;;
+            OpenSUSE-Leap-15.6-LMI-Server)
+              dockerfile="OpenSUSE-LMI-Server.Dockerfile"
+              default_base="opensuse/leap:15.6"
+              ;;
+            OpenSUSE-Tumbleweed-LMI-Server)
+              dockerfile="OpenSUSE-LMI-Server.Dockerfile"
+              ;;
+            Mint-22-LMI-Server)
+              dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              default_base="ubuntu:24.04"
               ;;
             *)
               echo "unknown target: $TARGET" >&2
