@@ -19,6 +19,8 @@ COPY firmware/lmi/ /tmp/lmi-firmware/
 
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
     sed -i '/^#ParallelDownloads/s/^#//' /etc/pacman.conf && \
+    sed -i 's/^CheckSpace/#CheckSpace/' /etc/pacman.conf && \
+    printf '\nDisableSandbox\n' >> /etc/pacman.conf && \
     pacman -Sy --noconfirm archlinux-keyring && \
     pacman -Syu --noconfirm && \
     pacman -S --noconfirm --needed \
