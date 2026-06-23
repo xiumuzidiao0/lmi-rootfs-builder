@@ -25,7 +25,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-      bash bash-completion ca-certificates coreutils curl dbus dbus-user-session dialog fastfetch \
+      bash bash-completion ca-certificates coreutils curl dbus dbus-user-session dialog \
       file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved systemd-timesyncd \
       systemd-sysv tzdata udev wget xz-utils \
       e2fsprogs \
@@ -34,6 +34,7 @@ RUN apt-get update && \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
+    if apt-cache show fastfetch >/dev/null 2>&1; then apt-get install -y --no-install-recommends fastfetch; fi && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
         sddm kde-plasma-desktop plasma-session-x11 plasma-workspace bluedevil plasma-nm powerdevil kscreen plasma-pa \
