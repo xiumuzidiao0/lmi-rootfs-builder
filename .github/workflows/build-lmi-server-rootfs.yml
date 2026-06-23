@@ -22,6 +22,11 @@ on:
           - Fedora-43-LMI-Server
           - Fedora-44-LMI-Server
           - Fedora-45-LMI-Server
+          - Fedora-Rawhide-LMI-Server
+          - AlmaLinux-9-LMI-Server
+          - AlmaLinux-10-LMI-Server
+          - RockyLinux-9-LMI-Server
+          - RockyLinux-10-LMI-Server
           - Alpine-3.20-LMI-Server
           - Alpine-3.22-LMI-Server
           - OpenSUSE-Leap-15.6-LMI-Server
@@ -108,6 +113,11 @@ jobs:
               "Fedora-43-LMI-Server",
               "Fedora-44-LMI-Server",
               "Fedora-45-LMI-Server",
+              "Fedora-Rawhide-LMI-Server",
+              "AlmaLinux-9-LMI-Server",
+              "AlmaLinux-10-LMI-Server",
+              "RockyLinux-9-LMI-Server",
+              "RockyLinux-10-LMI-Server",
               "Alpine-3.20-LMI-Server",
               "Alpine-3.22-LMI-Server",
               "OpenSUSE-Leap-15.6-LMI-Server",
@@ -206,6 +216,26 @@ jobs:
             Fedora-45-LMI-Server)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
               default_base="fedora:45"
+              ;;
+            Fedora-Rawhide-LMI-Server)
+              dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              default_base="fedora:rawhide"
+              ;;
+            AlmaLinux-9-LMI-Server)
+              dockerfile="EL-LMI-Server.Dockerfile"
+              default_base="almalinux:9"
+              ;;
+            AlmaLinux-10-LMI-Server)
+              dockerfile="EL-LMI-Server.Dockerfile"
+              default_base="almalinux:10"
+              ;;
+            RockyLinux-9-LMI-Server)
+              dockerfile="EL-LMI-Server.Dockerfile"
+              default_base="rockylinux:9"
+              ;;
+            RockyLinux-10-LMI-Server)
+              dockerfile="EL-LMI-Server.Dockerfile"
+              default_base="rockylinux:10"
               ;;
             Alpine-3.20-LMI-Server)
               dockerfile="Alpine-LMI-Server.Dockerfile"

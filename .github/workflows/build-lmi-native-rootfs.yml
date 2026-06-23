@@ -22,6 +22,7 @@ on:
           - Fedora-43-LMI-Native
           - Fedora-44-LMI-Native
           - Fedora-45-LMI-Native
+          - Fedora-Rawhide-LMI-Native
           - all
       custom_username:
         description: Default user
@@ -115,7 +116,8 @@ jobs:
               "Fedora-42-LMI-Native",
               "Fedora-43-LMI-Native",
               "Fedora-44-LMI-Native",
-              "Fedora-45-LMI-Native"
+              "Fedora-45-LMI-Native",
+              "Fedora-Rawhide-LMI-Native"
             ]' > matrix.json
           else
             jq -n -c --arg target "$target" '[$target]' > matrix.json
@@ -210,6 +212,10 @@ jobs:
             Fedora-45-LMI-Native)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
               default_base="fedora:45"
+              ;;
+            Fedora-Rawhide-LMI-Native)
+              dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              default_base="fedora:rawhide"
               ;;
           esac
 
