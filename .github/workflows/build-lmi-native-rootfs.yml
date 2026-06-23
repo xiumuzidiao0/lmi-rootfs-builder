@@ -9,6 +9,7 @@ on:
         type: choice
         default: Ubuntu-26-LMI-Native
         options:
+          - Ubuntu-Rolling-LMI-Native
           - Ubuntu-22-LMI-Native
           - Ubuntu-24-LMI-Native
           - Ubuntu-26-LMI-Native
@@ -20,6 +21,7 @@ on:
           - Fedora-42-LMI-Native
           - Fedora-43-LMI-Native
           - Fedora-44-LMI-Native
+          - Fedora-45-LMI-Native
           - all
       custom_username:
         description: Default user
@@ -101,6 +103,7 @@ jobs:
           target="${{ github.event.inputs.build_target }}"
           if [ "$target" = "all" ]; then
             jq -n -c '[
+              "Ubuntu-Rolling-LMI-Native",
               "Ubuntu-22-LMI-Native",
               "Ubuntu-24-LMI-Native",
               "Ubuntu-26-LMI-Native",
@@ -111,7 +114,8 @@ jobs:
               "Arch-LMI-Native",
               "Fedora-42-LMI-Native",
               "Fedora-43-LMI-Native",
-              "Fedora-44-LMI-Native"
+              "Fedora-44-LMI-Native",
+              "Fedora-45-LMI-Native"
             ]' > matrix.json
           else
             jq -n -c --arg target "$target" '[$target]' > matrix.json
@@ -163,6 +167,10 @@ jobs:
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               default_base="ubuntu:24.04"
               ;;
+            Ubuntu-Rolling-LMI-Native)
+              dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              default_base="ubuntu:rolling"
+              ;;
             Ubuntu-22-LMI-Native)
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               default_base="ubuntu:22.04"
@@ -198,6 +206,10 @@ jobs:
             Fedora-44-LMI-Native)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
               default_base="fedora:44"
+              ;;
+            Fedora-45-LMI-Native)
+              dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              default_base="fedora:45"
               ;;
           esac
 
