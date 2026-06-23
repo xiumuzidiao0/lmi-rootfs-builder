@@ -34,7 +34,7 @@ RUN if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
     else \
       echo "LANG=en_US.UTF-8" > /etc/locale.conf && echo "LC_ALL=en_US.UTF-8" >> /etc/locale.conf; \
     fi && \
-    groupadd -f render && groupadd -f input && groupadd -f video && groupadd -f audio && groupadd -f netdev && \
+    groupadd -f wheel && groupadd -f render && groupadd -f input && groupadd -f video && groupadd -f audio && groupadd -f netdev && \
     useradd -m -s /bin/bash -G wheel,audio,input,video,render,netdev "$USERNAME" && \
     echo "$USERNAME:$PASSWORD" | chpasswd && echo "root:$PASSWORD" | chpasswd && \
     echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/90-lmi-wheel && chmod 0440 /etc/sudoers.d/90-lmi-wheel && \
