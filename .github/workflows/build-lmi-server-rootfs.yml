@@ -9,16 +9,21 @@ on:
         type: choice
         default: Ubuntu-26-LMI-Server
         options:
+          - Ubuntu-22-LMI-Server
           - Ubuntu-24-LMI-Server
           - Ubuntu-26-LMI-Server
+          - Debian-Testing-LMI-Server
           - Debian-12-LMI-Server
+          - Debian-Sid-LMI-Server
           - Debian-13-LMI-Server
           - Arch-LMI-Server
           - Fedora-42-LMI-Server
           - Fedora-43-LMI-Server
+          - Fedora-44-LMI-Server
           - Alpine-3.20-LMI-Server
           - Alpine-3.22-LMI-Server
           - OpenSUSE-Leap-15.6-LMI-Server
+          - OpenSUSE-Leap-16.0-LMI-Server
           - OpenSUSE-Tumbleweed-LMI-Server
           - Mint-22-LMI-Server
           - all
@@ -88,16 +93,21 @@ jobs:
           target="${{ github.event.inputs.build_target }}"
           if [ "$target" = "all" ]; then
             jq -n -c '[
+              "Ubuntu-22-LMI-Server",
               "Ubuntu-24-LMI-Server",
               "Ubuntu-26-LMI-Server",
+              "Debian-Testing-LMI-Server",
               "Debian-12-LMI-Server",
+              "Debian-Sid-LMI-Server",
               "Debian-13-LMI-Server",
               "Arch-LMI-Server",
               "Fedora-42-LMI-Server",
               "Fedora-43-LMI-Server",
+              "Fedora-44-LMI-Server",
               "Alpine-3.20-LMI-Server",
               "Alpine-3.22-LMI-Server",
               "OpenSUSE-Leap-15.6-LMI-Server",
+              "OpenSUSE-Leap-16.0-LMI-Server",
               "OpenSUSE-Tumbleweed-LMI-Server",
               "Mint-22-LMI-Server"
             ]' > matrix.json
@@ -149,12 +159,24 @@ jobs:
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               default_base="ubuntu:24.04"
               ;;
+            Ubuntu-22-LMI-Server)
+              dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              default_base="ubuntu:22.04"
+              ;;
             Ubuntu-26-LMI-Server)
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              ;;
+            Debian-Testing-LMI-Server)
+              dockerfile="Debian-13-LMI-Native.Dockerfile"
+              default_base="debian:testing"
               ;;
             Debian-12-LMI-Server)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
               default_base="debian:bookworm"
+              ;;
+            Debian-Sid-LMI-Server)
+              dockerfile="Debian-13-LMI-Native.Dockerfile"
+              default_base="debian:sid"
               ;;
             Debian-13-LMI-Server)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
@@ -169,6 +191,10 @@ jobs:
             Fedora-43-LMI-Server)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
               ;;
+            Fedora-44-LMI-Server)
+              dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              default_base="fedora:44"
+              ;;
             Alpine-3.20-LMI-Server)
               dockerfile="Alpine-LMI-Server.Dockerfile"
               default_base="alpine:3.20"
@@ -179,6 +205,10 @@ jobs:
             OpenSUSE-Leap-15.6-LMI-Server)
               dockerfile="OpenSUSE-LMI-Server.Dockerfile"
               default_base="opensuse/leap:15.6"
+              ;;
+            OpenSUSE-Leap-16.0-LMI-Server)
+              dockerfile="OpenSUSE-LMI-Server.Dockerfile"
+              default_base="opensuse/leap:16.0"
               ;;
             OpenSUSE-Tumbleweed-LMI-Server)
               dockerfile="OpenSUSE-LMI-Server.Dockerfile"

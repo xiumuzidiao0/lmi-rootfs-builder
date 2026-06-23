@@ -9,13 +9,17 @@ on:
         type: choice
         default: Ubuntu-26-LMI-Native
         options:
+          - Ubuntu-22-LMI-Native
           - Ubuntu-24-LMI-Native
           - Ubuntu-26-LMI-Native
+          - Debian-Testing-LMI-Native
           - Debian-12-LMI-Native
+          - Debian-Sid-LMI-Native
           - Debian-13-LMI-Native
           - Arch-LMI-Native
           - Fedora-42-LMI-Native
           - Fedora-43-LMI-Native
+          - Fedora-44-LMI-Native
           - all
       custom_username:
         description: Default user
@@ -97,13 +101,17 @@ jobs:
           target="${{ github.event.inputs.build_target }}"
           if [ "$target" = "all" ]; then
             jq -n -c '[
+              "Ubuntu-22-LMI-Native",
               "Ubuntu-24-LMI-Native",
               "Ubuntu-26-LMI-Native",
+              "Debian-Testing-LMI-Native",
               "Debian-12-LMI-Native",
+              "Debian-Sid-LMI-Native",
               "Debian-13-LMI-Native",
               "Arch-LMI-Native",
               "Fedora-42-LMI-Native",
-              "Fedora-43-LMI-Native"
+              "Fedora-43-LMI-Native",
+              "Fedora-44-LMI-Native"
             ]' > matrix.json
           else
             jq -n -c --arg target "$target" '[$target]' > matrix.json
@@ -155,12 +163,24 @@ jobs:
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               default_base="ubuntu:24.04"
               ;;
+            Ubuntu-22-LMI-Native)
+              dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              default_base="ubuntu:22.04"
+              ;;
             Ubuntu-26-LMI-Native)
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
+              ;;
+            Debian-Testing-LMI-Native)
+              dockerfile="Debian-13-LMI-Native.Dockerfile"
+              default_base="debian:testing"
               ;;
             Debian-12-LMI-Native)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
               default_base="debian:bookworm"
+              ;;
+            Debian-Sid-LMI-Native)
+              dockerfile="Debian-13-LMI-Native.Dockerfile"
+              default_base="debian:sid"
               ;;
             Debian-13-LMI-Native)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
@@ -174,6 +194,10 @@ jobs:
               ;;
             Fedora-43-LMI-Native)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              ;;
+            Fedora-44-LMI-Native)
+              dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              default_base="fedora:44"
               ;;
           esac
 
