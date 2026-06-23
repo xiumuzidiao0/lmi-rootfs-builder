@@ -7,6 +7,7 @@ ARG ENABLE_kfgj_ARG=false
 ARG ENABLE_zip_ARG=true
 ARG ENABLE_docker_ARG=false
 ARG ENABLE_tmoe_ARG=false
+ARG ALLOW_ROOT_SSH_ARG=false
 ARG USERNAME=xmzd
 ARG PASSWORD=1
 
@@ -42,7 +43,11 @@ RUN if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
     if [ ! -f /etc/ssh/sshd_config ] && [ -f /usr/etc/ssh/sshd_config ]; then cp /usr/etc/ssh/sshd_config /etc/ssh/sshd_config; fi && \
     touch /etc/ssh/sshd_config && \
     sed -i '/^#*PermitRootLogin /d; /^#*PasswordAuthentication /d' /etc/ssh/sshd_config && \
-    printf 'PermitRootLogin no\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config
+    if [ "$ALLOW_ROOT_SSH_ARG" = "true" ]; then \
+      printf 'PermitRootLogin yes\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    else \
+      printf 'PermitRootLogin no\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    fi
 
 RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/null || true && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \

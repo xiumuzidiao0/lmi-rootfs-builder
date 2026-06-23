@@ -9,6 +9,7 @@ ARG ENABLE_zip_ARG=true
 ARG ENABLE_docker_ARG=false
 ARG ENABLE_srf_ARG=true
 ARG ENABLE_tmoe_ARG=false
+ARG ALLOW_ROOT_SSH_ARG=false
 ARG USERNAME=xmzd
 ARG PASSWORD=1
 
@@ -53,8 +54,12 @@ RUN if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
     useradd -m -s /bin/bash -G wheel,audio,input,video,render "$USERNAME" && \
     echo "$USERNAME:$PASSWORD" | chpasswd && echo "root:$PASSWORD" | chpasswd && \
     sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers && \
-    sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
-    sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    sed -i '/^#*PermitRootLogin /d; /^#*PasswordAuthentication /d' /etc/ssh/sshd_config && \
+    if [ "$ALLOW_ROOT_SSH_ARG" = "true" ]; then \
+      printf 'PermitRootLogin yes\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    else \
+      printf 'PermitRootLogin no\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    fi
 
 RUN cat > /etc/environment <<'EOF'
 XCURSOR_SIZE=48

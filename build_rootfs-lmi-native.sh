@@ -13,6 +13,7 @@ ENABLE_zip=${ENABLE_zip:-true}
 ENABLE_docker=${ENABLE_docker:-false}
 ENABLE_srf=${ENABLE_srf:-true}
 ENABLE_tmoe=${ENABLE_tmoe:-false}
+ALLOW_ROOT_SSH=${ALLOW_ROOT_SSH:-false}
 USERNAME=${USERNAME:-xmzd}
 PASSWORD=${PASSWORD:-1}
 BASE_IMAGE=${BASE_IMAGE:-}
@@ -34,6 +35,7 @@ Options:
   -f BOOL     Docker packages inside rootfs, default: false
   -h BOOL     Fcitx5 input method, default: true
   -j BOOL     tmoe helper, default: false
+  -r BOOL     Allow root SSH password login, default: false
   -u USER     Default user, default: xmzd
   -p PASS     Password for root and user, default: 1
   -B IMAGE    Override base image, useful when Docker Hub is rate-limited
@@ -46,7 +48,7 @@ Environment:
 EOF
 }
 
-while getopts "i:v:K:g:d:e:f:h:j:u:p:B:s:E" opt; do
+while getopts "i:v:K:g:d:e:f:h:j:r:u:p:B:s:E" opt; do
   case "$opt" in
     i) DOCKERFILE=$OPTARG ;;
     v) VERSION=$OPTARG ;;
@@ -57,6 +59,7 @@ while getopts "i:v:K:g:d:e:f:h:j:u:p:B:s:E" opt; do
     f) ENABLE_docker=$OPTARG ;;
     h) ENABLE_srf=$OPTARG ;;
     j) ENABLE_tmoe=$OPTARG ;;
+    r) ALLOW_ROOT_SSH=$OPTARG ;;
     u) USERNAME=$OPTARG ;;
     p) PASSWORD=$OPTARG ;;
     B) BASE_IMAGE=$OPTARG ;;
@@ -109,6 +112,7 @@ BUILD_ARGS=(
   --build-arg "ENABLE_docker_ARG=$ENABLE_docker"
   --build-arg "ENABLE_srf_ARG=$ENABLE_srf"
   --build-arg "ENABLE_tmoe_ARG=$ENABLE_tmoe"
+  --build-arg "ALLOW_ROOT_SSH_ARG=$ALLOW_ROOT_SSH"
   --build-arg "USERNAME=$USERNAME"
   --build-arg "PASSWORD=$PASSWORD"
 )

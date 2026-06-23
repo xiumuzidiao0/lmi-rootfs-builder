@@ -125,6 +125,9 @@ GitHub Actions 页面可以配置：
 - `enable_tmoe`
   安装 tmoe helper。
 
+- `allow_root_ssh`
+  允许使用 root 账号通过 SSH 密码登录。默认关闭。
+
 - `base_image`
   可选 base image 覆盖项。例如 Docker Hub 限流时可填镜像代理，或手动指定测试镜像。
 
@@ -155,6 +158,9 @@ chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-n
 
 # AlmaLinux 10 Server
 ./build_rootfs-lmi-native.sh -i EL-LMI-Server.Dockerfile -B almalinux:10 -K false -h false -v lmi
+
+# 允许 root 通过 SSH 密码登录
+./build_rootfs-lmi-native.sh -i Ubuntu-26-LMI-Native.Dockerfile -r true -v lmi
 ```
 
 输出 tarball 格式：
@@ -234,6 +240,20 @@ input video render audio plugdev netdev wheel sudo
 ```
 
 不同发行版的组名不完全一致，Dockerfile 会按发行版能力尽量创建或加入。
+
+默认 SSH 配置允许普通用户密码登录，但不允许 root 通过 SSH 登录：
+
+```text
+PermitRootLogin no
+PasswordAuthentication yes
+```
+
+如果在 GitHub Actions 中开启 `allow_root_ssh`，或本地构建时传入 `-r true`，会改为：
+
+```text
+PermitRootLogin yes
+PasswordAuthentication yes
+```
 
 ## 已知限制
 

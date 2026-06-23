@@ -9,6 +9,7 @@ ARG ENABLE_zip_ARG=true
 ARG ENABLE_docker_ARG=false
 ARG ENABLE_srf_ARG=true
 ARG ENABLE_tmoe_ARG=false
+ARG ALLOW_ROOT_SSH_ARG=false
 ARG USERNAME=xmzd
 ARG PASSWORD=1
 
@@ -65,7 +66,14 @@ RUN sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen && \
     deluser --remove-home debian 2>/dev/null || true && \
     useradd -m -s /bin/bash -G sudo,audio,input,video,render,plugdev,users,netdev "$USERNAME" && \
     echo "$USERNAME:$PASSWORD" | chpasswd && echo "root:$PASSWORD" | chpasswd && \
-    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-lmi-user && chmod 0440 /etc/sudoers.d/90-lmi-user
+    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-lmi-user && chmod 0440 /etc/sudoers.d/90-lmi-user && \
+    mkdir -p /etc/ssh && touch /etc/ssh/sshd_config && \
+    sed -i '/^#*PermitRootLogin /d; /^#*PasswordAuthentication /d' /etc/ssh/sshd_config && \
+    if [ "$ALLOW_ROOT_SSH_ARG" = "true" ]; then \
+      printf 'PermitRootLogin yes\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    else \
+      printf 'PermitRootLogin no\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config; \
+    fi
 
 RUN cat > /etc/environment <<'EOF'
 XCURSOR_SIZE=48

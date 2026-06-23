@@ -69,6 +69,11 @@ on:
         required: true
         type: boolean
         default: false
+      allow_root_ssh:
+        description: Allow SSH password login as root
+        required: true
+        type: boolean
+        default: false
       base_image:
         description: Optional base image override
         required: false
@@ -158,6 +163,7 @@ jobs:
           ENABLE_ZIP: ${{ github.event.inputs.enable_zip }}
           ENABLE_DOCKER: ${{ github.event.inputs.enable_docker }}
           ENABLE_TMOE: ${{ github.event.inputs.enable_tmoe }}
+          ALLOW_ROOT_SSH: ${{ github.event.inputs.allow_root_ssh }}
           USERNAME: ${{ github.event.inputs.custom_username }}
           PASSWORD: ${{ github.event.inputs.password }}
           BASE_IMAGE: ${{ github.event.inputs.base_image }}
@@ -277,6 +283,7 @@ jobs:
             -f "$ENABLE_DOCKER"
             -h false
             -j "$ENABLE_TMOE"
+            -r "$ALLOW_ROOT_SSH"
             -u "$USERNAME"
             -p "$PASSWORD"
           )
