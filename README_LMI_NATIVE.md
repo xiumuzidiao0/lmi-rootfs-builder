@@ -4,10 +4,31 @@ These targets build native arm64 rootfs images for the Xiaomi lmi mainline Linux
 
 Native targets:
 
-- `Ubuntu-26-LMI-Native.Dockerfile`
-- `Debian-13-LMI-Native.Dockerfile`
-- `Arch-LMI-Native.Dockerfile`
-- `Fedora-43-LMI-Native.Dockerfile`
+- `Ubuntu-24-LMI-Native`
+- `Ubuntu-26-LMI-Native`
+- `Debian-12-LMI-Native`
+- `Debian-13-LMI-Native`
+- `Arch-LMI-Native`
+- `Fedora-42-LMI-Native`
+- `Fedora-43-LMI-Native`
+
+The versioned targets without matching Dockerfiles reuse the nearest maintained Dockerfile with a base image override:
+
+- `Ubuntu-24-LMI-Native` uses `Ubuntu-26-LMI-Native.Dockerfile` with `ubuntu:24.04`
+- `Debian-12-LMI-Native` uses `Debian-13-LMI-Native.Dockerfile` with `debian:bookworm`
+- `Fedora-42-LMI-Native` uses `Fedora-43-LMI-Native.Dockerfile` with `fedora:42`
+
+Server/headless targets are available in the `Build LMI Server RootFS` workflow:
+
+- `Ubuntu-24-LMI-Server`
+- `Ubuntu-26-LMI-Server`
+- `Debian-12-LMI-Server`
+- `Debian-13-LMI-Server`
+- `Arch-LMI-Server`
+- `Fedora-42-LMI-Server`
+- `Fedora-43-LMI-Server`
+
+The server workflow sets `BUILD_KDE=false` and disables Fcitx, while keeping native boot, networking, firmware overlay, SSH, and first-boot setup.
 
 The native targets keep distribution Mesa/Freedreno packages for the Snapdragon GPU path. They intentionally do not install `mesa-for-android-container`, Termux-X11, Droidspaces services, Android audio forwarding, anland, or Android container groups.
 
@@ -17,7 +38,7 @@ The native first-boot service grows an ext4 root filesystem to fill the flashed 
 
 ## Build
 
-Use the GitHub Actions workflow `Build LMI Native RootFS` for normal builds. It builds one target or all native targets and publishes rootfs tarballs.
+Use the GitHub Actions workflow `Build LMI Native RootFS` for desktop builds. It builds one target or all native targets and publishes rootfs tarballs. Use `Build LMI Server RootFS` for headless/server rootfs tarballs.
 
 Local builds are mainly for debugging. Run from this directory in WSL or Linux with Docker buildx available:
 
@@ -25,9 +46,12 @@ Local builds are mainly for debugging. Run from this directory in WSL or Linux w
 chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-native-firstboot.sh
 
 ./build_rootfs-lmi-native.sh -i Ubuntu-26-LMI-Native.Dockerfile -v lmi
+./build_rootfs-lmi-native.sh -i Ubuntu-26-LMI-Native.Dockerfile -B ubuntu:24.04 -v lmi
 ./build_rootfs-lmi-native.sh -i Debian-13-LMI-Native.Dockerfile -v lmi
+./build_rootfs-lmi-native.sh -i Debian-13-LMI-Native.Dockerfile -B debian:bookworm -v lmi
 ./build_rootfs-lmi-native.sh -i Arch-LMI-Native.Dockerfile -v lmi
 ./build_rootfs-lmi-native.sh -i Fedora-43-LMI-Native.Dockerfile -v lmi
+./build_rootfs-lmi-native.sh -i Fedora-43-LMI-Native.Dockerfile -B fedora:42 -v lmi
 ```
 
 The workflow runs on `ubuntu-24.04-arm`, so the images are built natively for arm64. It does not need QEMU/binfmt for the normal GitHub build path.

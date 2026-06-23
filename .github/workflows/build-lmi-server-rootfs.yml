@@ -1,21 +1,21 @@
-name: Build LMI Native RootFS
+name: Build LMI Server RootFS
 
 on:
   workflow_dispatch:
     inputs:
       build_target:
-        description: Distribution rootfs to build
+        description: Server rootfs to build
         required: true
         type: choice
-        default: Ubuntu-26-LMI-Native
+        default: Ubuntu-26-LMI-Server
         options:
-          - Ubuntu-24-LMI-Native
-          - Ubuntu-26-LMI-Native
-          - Debian-12-LMI-Native
-          - Debian-13-LMI-Native
-          - Arch-LMI-Native
-          - Fedora-42-LMI-Native
-          - Fedora-43-LMI-Native
+          - Ubuntu-24-LMI-Server
+          - Ubuntu-26-LMI-Server
+          - Debian-12-LMI-Server
+          - Debian-13-LMI-Server
+          - Arch-LMI-Server
+          - Fedora-42-LMI-Server
+          - Fedora-43-LMI-Server
           - all
       custom_username:
         description: Default user
@@ -27,22 +27,8 @@ on:
         required: true
         type: string
         default: "1"
-      build_kde:
-        description: KDE profile
-        required: true
-        type: choice
-        default: conc
-        options:
-          - conc
-          - min
-          - false
       enable_zh_tz:
         description: Chinese locale and Asia/Shanghai timezone
-        required: true
-        type: boolean
-        default: true
-      enable_srf:
-        description: Install Fcitx5 input method
         required: true
         type: boolean
         default: true
@@ -67,7 +53,7 @@ on:
         type: boolean
         default: false
       base_image:
-        description: Optional base image override, for example mirror.gcr.io/library/ubuntu:26.04
+        description: Optional base image override
         required: false
         type: string
         default: ""
@@ -76,7 +62,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: lmi-native-rootfs-${{ github.ref }}-${{ github.event.inputs.build_target }}
+  group: lmi-server-rootfs-${{ github.ref }}-${{ github.event.inputs.build_target }}
   cancel-in-progress: false
 
 jobs:
@@ -97,13 +83,13 @@ jobs:
           target="${{ github.event.inputs.build_target }}"
           if [ "$target" = "all" ]; then
             jq -n -c '[
-              "Ubuntu-24-LMI-Native",
-              "Ubuntu-26-LMI-Native",
-              "Debian-12-LMI-Native",
-              "Debian-13-LMI-Native",
-              "Arch-LMI-Native",
-              "Fedora-42-LMI-Native",
-              "Fedora-43-LMI-Native"
+              "Ubuntu-24-LMI-Server",
+              "Ubuntu-26-LMI-Server",
+              "Debian-12-LMI-Server",
+              "Debian-13-LMI-Server",
+              "Arch-LMI-Server",
+              "Fedora-42-LMI-Server",
+              "Fedora-43-LMI-Server"
             ]' > matrix.json
           else
             jq -n -c --arg target "$target" '[$target]' > matrix.json
@@ -116,7 +102,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
-          echo "build_id=lmi-native-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+          echo "build_id=lmi-server-$(date -u +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
 
   build:
     needs: setup
@@ -128,17 +114,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build rootfs
+      - name: Build server rootfs
         shell: bash
         env:
           TARGET: ${{ matrix.target }}
           BUILD_ID: ${{ needs.setup.outputs.build_id }}
-          BUILD_KDE: ${{ github.event.inputs.build_kde }}
           ENABLE_ZH_TZ: ${{ github.event.inputs.enable_zh_tz }}
           ENABLE_KFGJ: ${{ github.event.inputs.enable_kfgj }}
           ENABLE_ZIP: ${{ github.event.inputs.enable_zip }}
           ENABLE_DOCKER: ${{ github.event.inputs.enable_docker }}
-          ENABLE_SRF: ${{ github.event.inputs.enable_srf }}
           ENABLE_TMOE: ${{ github.event.inputs.enable_tmoe }}
           USERNAME: ${{ github.event.inputs.custom_username }}
           PASSWORD: ${{ github.event.inputs.password }}
@@ -148,32 +132,36 @@ jobs:
           set -euo pipefail
           chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-native-firstboot.sh
 
-          dockerfile="${TARGET}.Dockerfile"
+          dockerfile=""
           default_base=""
           case "$TARGET" in
-            Ubuntu-24-LMI-Native)
+            Ubuntu-24-LMI-Server)
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               default_base="ubuntu:24.04"
               ;;
-            Ubuntu-26-LMI-Native)
+            Ubuntu-26-LMI-Server)
               dockerfile="Ubuntu-26-LMI-Native.Dockerfile"
               ;;
-            Debian-12-LMI-Native)
+            Debian-12-LMI-Server)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
               default_base="debian:bookworm"
               ;;
-            Debian-13-LMI-Native)
+            Debian-13-LMI-Server)
               dockerfile="Debian-13-LMI-Native.Dockerfile"
               ;;
-            Arch-LMI-Native)
+            Arch-LMI-Server)
               dockerfile="Arch-LMI-Native.Dockerfile"
               ;;
-            Fedora-42-LMI-Native)
+            Fedora-42-LMI-Server)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
               default_base="fedora:42"
               ;;
-            Fedora-43-LMI-Native)
+            Fedora-43-LMI-Server)
               dockerfile="Fedora-43-LMI-Native.Dockerfile"
+              ;;
+            *)
+              echo "unknown target: $TARGET" >&2
+              exit 2
               ;;
           esac
 
@@ -182,12 +170,12 @@ jobs:
           args=(
             -i "$dockerfile"
             -v "$BUILD_ID"
-            -K "$BUILD_KDE"
+            -K false
             -g "$ENABLE_ZH_TZ"
             -d "$ENABLE_KFGJ"
             -e "$ENABLE_ZIP"
             -f "$ENABLE_DOCKER"
-            -h "$ENABLE_SRF"
+            -h false
             -j "$ENABLE_TMOE"
             -u "$USERNAME"
             -p "$PASSWORD"
@@ -200,7 +188,7 @@ jobs:
           export OUTPUT_PREFIX="$TARGET"
           ./build_rootfs-lmi-native.sh "${args[@]}"
 
-      - name: Upload rootfs artifact
+      - name: Upload server rootfs artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-rootfs
@@ -233,14 +221,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.setup.outputs.build_id }}
-          name: LMI Native RootFS ${{ needs.setup.outputs.build_id }}
+          name: LMI Server RootFS ${{ needs.setup.outputs.build_id }}
           files: release_assets/*
           body: |
-            LMI native rootfs automatic build.
+            LMI server rootfs automatic build.
 
             Build date: ${{ needs.setup.outputs.build_date }}
             Build target: ${{ github.event.inputs.build_target }}
             User: ${{ github.event.inputs.custom_username }}
-            KDE profile: ${{ github.event.inputs.build_kde }}
-            Native Mesa/Freedreno: distribution Mesa packages are included.
+            Profile: server/headless, KDE disabled, Fcitx disabled.
             This workflow publishes rootfs tarballs only. Convert tar.xz to ext4/sparse images locally before flashing.

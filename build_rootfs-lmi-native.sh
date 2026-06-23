@@ -76,7 +76,7 @@ if [ ! -f "$DOCKERFILE" ]; then
   exit 1
 fi
 
-PREFIX=$(basename "$DOCKERFILE" .Dockerfile)
+PREFIX=${OUTPUT_PREFIX:-$(basename "$DOCKERFILE" .Dockerfile)}
 TEMP_TAR="custom-${PREFIX}-rootfs.tar"
 FINAL_TAR="${PREFIX}-rootfs-${ARCH_NAME}-${DATE}-${VERSION}.tar.xz"
 FINAL_IMG="${PREFIX}-rootfs-${ARCH_NAME}-${DATE}-${VERSION}.ext4.img"
