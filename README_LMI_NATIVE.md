@@ -42,7 +42,7 @@ Useful options:
 ./build_rootfs-lmi-native.sh -i Debian-13-LMI-Native.Dockerfile -u xmzd -p 1
 
 # override base image when Docker Hub is rate-limited
-./build_rootfs-lmi-native.sh -i Arch-LMI-Native.Dockerfile -B mirror.gcr.io/library/archlinux:base
+./build_rootfs-lmi-native.sh -i Arch-LMI-Native.Dockerfile -B menci/archlinuxarm:base
 
 # local-only: also create an ext4 image
 ./build_rootfs-lmi-native.sh -i Ubuntu-26-LMI-Native.Dockerfile -v lmi -s 12G

@@ -1,5 +1,5 @@
 # check=skip=SecretsUsedInArgOrEnv
-ARG BASE_IMAGE=archlinux:base
+ARG BASE_IMAGE=menci/archlinuxarm:base
 FROM ${BASE_IMAGE} AS customizer
 
 ARG BUILD_KDE=conc
