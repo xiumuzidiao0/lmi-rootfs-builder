@@ -18,11 +18,11 @@ COPY firmware/lmi/ /tmp/lmi-firmware/
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
     dnf -y update && \
     dnf install -y --setopt=install_weak_deps=False \
-      bash bash-completion ca-certificates coreutils curl dbus-daemon e2fsprogs \
+      bash bash-completion ca-certificates curl dbus-daemon e2fsprogs \
       file findutils gawk git grep gzip jq kmod nano openssh-server procps-ng sed sudo systemd \
       tzdata wget xz zstd \
       iproute iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill && \
-    dnf install -y --setopt=install_weak_deps=False wireless-regdb || true && \
+    (dnf install -y --setopt=install_weak_deps=False wireless-regdb || true) && \
     if [ "$ENABLE_kfgj_ARG" = "true" ]; then \
       dnf install -y --setopt=install_weak_deps=False gcc gcc-c++ make cmake clang llvm python3 python3-pip python3-devel; \
     fi && \
