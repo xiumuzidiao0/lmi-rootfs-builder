@@ -19,8 +19,8 @@ COPY firmware/lmi/ /tmp/lmi-firmware/
 
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
     sed -i '/^#ParallelDownloads/s/^#//' /etc/pacman.conf && \
+    sed -i '/^ParallelDownloads/a DisableSandbox' /etc/pacman.conf && \
     sed -i 's/^CheckSpace/#CheckSpace/' /etc/pacman.conf && \
-    printf '\nDisableSandbox\n' >> /etc/pacman.conf && \
     pacman -Sy --noconfirm archlinux-keyring && \
     pacman -Syu --noconfirm && \
     pacman -S --noconfirm --needed \
@@ -29,7 +29,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       tzdata wget xz zstd \
       iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice \
-      bluez pipewire pipewire-alsa pipewire-pulse wireplumber pulseaudio \
+      bluez pipewire pipewire-alsa pipewire-pulse wireplumber \
       linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno v4l-utils && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       pacman -S --noconfirm --needed \
