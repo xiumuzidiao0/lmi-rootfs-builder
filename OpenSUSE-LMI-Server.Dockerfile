@@ -38,8 +38,11 @@ RUN if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
     useradd -m -s /bin/bash -G wheel,audio,input,video,render,netdev "$USERNAME" && \
     echo "$USERNAME:$PASSWORD" | chpasswd && echo "root:$PASSWORD" | chpasswd && \
     echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/90-lmi-wheel && chmod 0440 /etc/sudoers.d/90-lmi-wheel && \
-    sed -i 's/^#PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config && \
-    sed -i 's/^#PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    mkdir -p /etc/ssh && ssh-keygen -A && \
+    if [ ! -f /etc/ssh/sshd_config ] && [ -f /usr/etc/ssh/sshd_config ]; then cp /usr/etc/ssh/sshd_config /etc/ssh/sshd_config; fi && \
+    touch /etc/ssh/sshd_config && \
+    sed -i '/^#*PermitRootLogin /d; /^#*PasswordAuthentication /d' /etc/ssh/sshd_config && \
+    printf 'PermitRootLogin no\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config
 
 RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/null || true && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
