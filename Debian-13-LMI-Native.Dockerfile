@@ -36,7 +36,14 @@ RUN apt-get update && \
       bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
       firmware-linux firmware-linux-free firmware-linux-nonfree firmware-qcom-soc firmware-atheros zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
-    if apt-cache show fastfetch >/dev/null 2>&1; then apt-get install -y --no-install-recommends fastfetch; fi && \
+    apt_install_if_available() { \
+      pkgs=""; \
+      for pkg in "$@"; do \
+        if apt-cache show "$pkg" >/dev/null 2>&1; then pkgs="$pkgs $pkg"; fi; \
+      done; \
+      if [ -n "$pkgs" ]; then apt-get install -y --no-install-recommends $pkgs; fi; \
+    } && \
+    apt_install_if_available fastfetch && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
         sddm kde-plasma-desktop plasma-workspace bluedevil plasma-nm powerdevil kscreen plasma-pa \
@@ -45,10 +52,10 @@ RUN apt-get update && \
         desktop-base upower; \
     fi && \
     if [ "$BUILD_KDE" = "conc" ]; then \
-      apt-get install -y --no-install-recommends \
+      apt_install_if_available \
         plasma-systemmonitor kfind filelight glmark2 vkmark wayland-utils pciutils dmidecode \
-        xdg-user-dirs dolphin-plugins ffmpegthumbs kdegraphics-thumbnailers kimageformat6-plugins \
-        webext-plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse \
+        xdg-user-dirs dolphin-plugins ffmpegthumbs kdegraphics-thumbnailers kimageformat6-plugins kimageformat-plugins \
+        webext-plasma-browser-integration plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse \
         qtwayland5 guvcview qv4l2; \
     fi && \
     if [ "$ENABLE_srf_ARG" = "true" ]; then apt-get install -y --no-install-recommends fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 fcitx5-frontend-qt6; fi && \

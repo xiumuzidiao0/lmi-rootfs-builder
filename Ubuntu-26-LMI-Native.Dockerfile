@@ -35,20 +35,26 @@ RUN apt-get update && \
       bluez bluetooth pulseaudio-utils pipewire pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
-    if apt-cache show systemd-resolved >/dev/null 2>&1; then apt-get install -y --no-install-recommends systemd-resolved; fi && \
-    if apt-cache show pipewire-alsa >/dev/null 2>&1; then apt-get install -y --no-install-recommends pipewire-alsa; fi && \
-    if apt-cache show fastfetch >/dev/null 2>&1; then apt-get install -y --no-install-recommends fastfetch; fi && \
+    apt_install_if_available() { \
+      pkgs=""; \
+      for pkg in "$@"; do \
+        if apt-cache show "$pkg" >/dev/null 2>&1; then pkgs="$pkgs $pkg"; fi; \
+      done; \
+      if [ -n "$pkgs" ]; then apt-get install -y --no-install-recommends $pkgs; fi; \
+    } && \
+    apt_install_if_available systemd-resolved pipewire-alsa fastfetch && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \
-        sddm kde-plasma-desktop plasma-session-x11 plasma-workspace bluedevil plasma-nm powerdevil kscreen plasma-pa \
+        sddm kde-plasma-desktop plasma-workspace bluedevil plasma-nm powerdevil kscreen plasma-pa \
         polkit-kde-agent-1 kwin-x11 xserver-xorg dbus-x11 x11-xserver-utils \
         dolphin konsole kate kinfocenter ark systemsettings kde-config-screenlocker kio-extras \
-        kubuntu-settings-desktop kubuntu-wallpapers upower; \
+        upower; \
+      apt_install_if_available plasma-session-x11 kubuntu-settings-desktop kubuntu-wallpapers; \
     fi && \
     if [ "$BUILD_KDE" = "conc" ]; then \
-      apt-get install -y --no-install-recommends \
+      apt_install_if_available \
         plasma-systemmonitor kfind filelight glmark2 vkmark wayland-utils pciutils dmidecode \
-        xdg-user-dirs dolphin-plugins ffmpegthumbs kdegraphics-thumbnailers kimageformat6-plugins \
+        xdg-user-dirs dolphin-plugins ffmpegthumbs kdegraphics-thumbnailers kimageformat6-plugins kimageformat-plugins \
         plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse \
         qtwayland5 guvcview qv4l2; \
     fi && \
