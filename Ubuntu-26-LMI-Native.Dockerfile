@@ -27,14 +27,16 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
       bash bash-completion ca-certificates coreutils curl dbus dbus-user-session dialog \
-      file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-resolved systemd-timesyncd \
+      file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-timesyncd \
       systemd-sysv tzdata udev wget xz-utils \
       e2fsprogs \
       iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
       usbutils usbmuxd libimobiledevice-utils adb fastboot android-sdk-platform-tools-common \
-      bluez bluetooth pulseaudio-utils pipewire pipewire-alsa pipewire-pulse wireplumber libspa-0.2-bluetooth \
+      bluez bluetooth pulseaudio-utils pipewire pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
       fonts-noto-cjk fonts-noto-color-emoji mesa-utils mesa-vulkan-drivers vulkan-tools libgl1-mesa-dri v4l-utils && \
+    if apt-cache show systemd-resolved >/dev/null 2>&1; then apt-get install -y --no-install-recommends systemd-resolved; fi && \
+    if apt-cache show pipewire-alsa >/dev/null 2>&1; then apt-get install -y --no-install-recommends pipewire-alsa; fi && \
     if apt-cache show fastfetch >/dev/null 2>&1; then apt-get install -y --no-install-recommends fastfetch; fi && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then \
       apt-get install -y --no-install-recommends \

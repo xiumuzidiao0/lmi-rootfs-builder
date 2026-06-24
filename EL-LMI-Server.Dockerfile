@@ -17,22 +17,22 @@ COPY scripts/lmi-native-firstboot.service /etc/systemd/system/lmi-native-firstbo
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
-    dnf -y update && \
-    dnf install -y --setopt=install_weak_deps=False \
+    dnf -y update --allowerasing && \
+    dnf install -y --allowerasing --setopt=install_weak_deps=False \
       bash bash-completion ca-certificates curl dbus-daemon e2fsprogs \
       file findutils gawk git grep gzip jq kmod nano openssh-server procps-ng sed sudo systemd \
       tzdata wget xz zstd \
       iproute iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill && \
-    (dnf install -y --setopt=install_weak_deps=False wireless-regdb || true) && \
+    (dnf install -y --allowerasing --setopt=install_weak_deps=False wireless-regdb || true) && \
     if [ "$ENABLE_kfgj_ARG" = "true" ]; then \
-      dnf install -y --setopt=install_weak_deps=False gcc gcc-c++ make cmake clang llvm python3 python3-pip python3-devel; \
+      dnf install -y --allowerasing --setopt=install_weak_deps=False gcc gcc-c++ make cmake clang llvm python3 python3-pip python3-devel; \
     fi && \
     if [ "$ENABLE_zip_ARG" = "true" ]; then \
-      dnf install -y --setopt=install_weak_deps=False zip unzip bzip2 tar gzip; \
+      dnf install -y --allowerasing --setopt=install_weak_deps=False zip unzip bzip2 tar gzip; \
     fi && \
     if [ "$ENABLE_docker_ARG" = "true" ]; then \
-      dnf install -y --setopt=install_weak_deps=False moby-engine docker-compose docker-cli || \
-      dnf install -y --setopt=install_weak_deps=False docker; \
+      dnf install -y --allowerasing --setopt=install_weak_deps=False moby-engine docker-compose docker-cli || \
+      dnf install -y --allowerasing --setopt=install_weak_deps=False docker; \
     fi && \
     if [ "$ENABLE_tmoe_ARG" = "true" ]; then \
       git clone --depth=1 https://github.com/2moe/tmoe-linux.git /usr/local/etc/tmoe-linux/git && \

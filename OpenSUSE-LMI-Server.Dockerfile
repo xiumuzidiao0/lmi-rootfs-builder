@@ -26,7 +26,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       iproute2 iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill wireless-regdb && \
     if zypper --non-interactive search --match-exact fastfetch | grep -q '^i\\? | fastfetch '; then zypper --non-interactive install --no-recommends fastfetch; fi && \
     if [ "$ENABLE_kfgj_ARG" = "true" ]; then zypper --non-interactive install --no-recommends gcc gcc-c++ make cmake clang llvm python3 python3-pip python3-devel; fi && \
-    if [ "$ENABLE_zip_ARG" = "true" ]; then zypper --non-interactive install --no-recommends zip unzip p7zip bzip2 tar gzip; fi && \
+    if [ "$ENABLE_zip_ARG" = "true" ]; then zypper --non-interactive install --no-recommends zip unzip p7zip bzip2 tar; fi && \
     if [ "$ENABLE_docker_ARG" = "true" ]; then zypper --non-interactive install --no-recommends docker docker-compose; fi && \
     if [ "$ENABLE_tmoe_ARG" = "true" ]; then git clone --depth=1 https://github.com/2moe/tmoe-linux.git /usr/local/etc/tmoe-linux/git && ln -sf /usr/local/etc/tmoe-linux/git/debian.sh /usr/local/bin/tmoe; fi
 

@@ -241,7 +241,7 @@ jobs:
               ;;
             RockyLinux-10-LMI-Server)
               dockerfile="EL-LMI-Server.Dockerfile"
-              default_base="rockylinux:10"
+              default_base="rockylinux/rockylinux:10"
               ;;
             Alpine-3.20-LMI-Server)
               dockerfile="Alpine-LMI-Server.Dockerfile"
