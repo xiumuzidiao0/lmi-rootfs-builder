@@ -39,7 +39,8 @@ RUN apt-get update && \
     apt_install_if_available() { \
       pkgs=""; \
       for pkg in "$@"; do \
-        if apt-cache show "$pkg" >/dev/null 2>&1; then pkgs="$pkgs $pkg"; fi; \
+        candidate="$(apt-cache policy "$pkg" | sed -n 's/^  Candidate: //p' | head -n1)"; \
+        if [ -n "$candidate" ] && [ "$candidate" != "(none)" ]; then pkgs="$pkgs $pkg"; fi; \
       done; \
       if [ -n "$pkgs" ]; then apt-get install -y --no-install-recommends $pkgs; fi; \
     } && \
@@ -58,8 +59,8 @@ RUN apt-get update && \
         webext-plasma-browser-integration plasma-browser-integration gstreamer1.0-plugins-base gstreamer1.0-plugins-good libcanberra-pulse \
         qtwayland5 guvcview qv4l2; \
     fi && \
-    if [ "$ENABLE_srf_ARG" = "true" ]; then apt-get install -y --no-install-recommends fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 fcitx5-frontend-qt6; fi && \
-    if [ "$ENABLE_srf_ARG" = "true" ] && [ "$ENABLE_zh_tz_ARG" = "true" ]; then apt-get install -y --no-install-recommends fcitx5-chinese-addons; fi && \
+    if [ "$ENABLE_srf_ARG" = "true" ]; then apt_install_if_available fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 fcitx5-frontend-qt6; fi && \
+    if [ "$ENABLE_srf_ARG" = "true" ] && [ "$ENABLE_zh_tz_ARG" = "true" ]; then apt_install_if_available fcitx5-chinese-addons; fi && \
     if [ "$ENABLE_kfgj_ARG" = "true" ]; then apt-get install -y --no-install-recommends build-essential clang cmake gcc g++ llvm make pkg-config python3 python3-dev python3-pip python3-venv; fi && \
     if [ "$ENABLE_zip_ARG" = "true" ]; then apt-get install -y --no-install-recommends bzip2 gzip p7zip-full tar unzip zip; fi && \
     if [ "$ENABLE_docker_ARG" = "true" ]; then apt-get install -y --no-install-recommends docker.io docker-compose; fi && \
