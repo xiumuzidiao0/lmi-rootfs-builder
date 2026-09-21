@@ -14,13 +14,21 @@ ARG PASSWORD=1
 COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 COPY scripts/lmi-native-firstboot.sh /usr/local/sbin/lmi-native-firstboot
 COPY scripts/lmi-native-firstboot.service /etc/systemd/system/lmi-native-firstboot.service
+COPY scripts/lmi-keys.service /etc/systemd/system/lmi-keys.service
+COPY scripts/lmi-wifi scripts/lmi-wifi-scan scripts/lmi-wifi-join scripts/lmi-wifi-status scripts/lmi-keys scripts/lmi-font-step /usr/local/bin/
+COPY scripts/consolefonts/ /usr/share/consolefonts/
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
-RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
+RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step && \
+    ln -sf /usr/local/bin/lmi-wifi /usr/local/bin/wifi && \
+    ln -sf /usr/local/bin/lmi-wifi-scan /usr/local/bin/wifi-scan && \
+    ln -sf /usr/local/bin/lmi-wifi-join /usr/local/bin/wifi-join && \
+    ln -sf /usr/local/bin/lmi-wifi-status /usr/local/bin/wifi-status && \
+    ln -sf /usr/local/bin/lmi-font-step /usr/local/bin/font-step && \
     dnf -y update --allowerasing && \
     dnf install -y --allowerasing --setopt=install_weak_deps=False \
       bash bash-completion ca-certificates curl dbus-daemon e2fsprogs \
-      file findutils gawk git grep gzip jq kmod nano openssh-server procps-ng sed sudo systemd \
+      file findutils gawk git grep gzip jq kbd kmod nano openssh-server procps-ng sed sudo systemd \
       tzdata wget xz zstd \
       iproute iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill && \
     (dnf install -y --allowerasing --setopt=install_weak_deps=False wireless-regdb || true) && \
@@ -61,7 +69,7 @@ RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/nu
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     printf 'LMI_USER=%s\nLMI_AUTOLOGIN=false\n' "$USERNAME" > /etc/lmi-native.conf
 
-RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service || true && \
+RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service lmi-keys.service || true && \
     dnf clean all && rm -rf /var/cache/dnf/* /tmp/*
 
 FROM scratch AS export

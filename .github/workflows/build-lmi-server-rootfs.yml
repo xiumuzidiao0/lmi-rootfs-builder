@@ -170,7 +170,7 @@ jobs:
           BUILDER: default
         run: |
           set -euo pipefail
-          chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-native-firstboot.sh
+          chmod +x build_rootfs-lmi-native.sh scripts/lmi-make-ext4-image.sh scripts/lmi-native-firstboot.sh scripts/lmi-wifi* scripts/lmi-keys scripts/lmi-font-step
 
           dockerfile=""
           default_base=""

@@ -13,13 +13,21 @@ ARG PASSWORD=1
 
 COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 COPY scripts/lmi-native-firstboot.sh /usr/local/sbin/lmi-native-firstboot
+COPY scripts/lmi-wifi scripts/lmi-wifi-scan scripts/lmi-wifi-join scripts/lmi-wifi-status scripts/lmi-keys scripts/lmi-font-step /usr/local/bin/
+COPY scripts/lmi-keys.initd /etc/init.d/lmi-keys
+COPY scripts/consolefonts/ /usr/share/consolefonts/
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
-RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
+RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step /etc/init.d/lmi-keys && \
+    ln -sf /usr/local/bin/lmi-wifi /usr/local/bin/wifi && \
+    ln -sf /usr/local/bin/lmi-wifi-scan /usr/local/bin/wifi-scan && \
+    ln -sf /usr/local/bin/lmi-wifi-join /usr/local/bin/wifi-join && \
+    ln -sf /usr/local/bin/lmi-wifi-status /usr/local/bin/wifi-status && \
+    ln -sf /usr/local/bin/lmi-font-step /usr/local/bin/font-step && \
     apk update && \
     apk add --no-cache \
       alpine-base bash bash-completion ca-certificates coreutils curl dbus dialog \
-      e2fsprogs file findutils gawk git grep jq kmod nano openssh openrc procps-ng sed sudo \
+      e2fsprogs file findutils gawk git grep jq kbd kmod nano openssh openrc procps-ng sed sudo \
       tzdata wget xz zstd \
       iproute2 iptables iputils networkmanager wpa_supplicant iw bind-tools && \
     if apk info -e fastfetch >/dev/null 2>&1 || apk search -q '^fastfetch$' | grep -qx fastfetch; then apk add --no-cache fastfetch; fi && \
@@ -54,6 +62,7 @@ RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/nu
 RUN rc-update add dbus default 2>/dev/null || true && \
     rc-update add sshd default 2>/dev/null || true && \
     rc-update add networkmanager default 2>/dev/null || true && \
+    rc-update add lmi-keys default 2>/dev/null || true && \
     rm -rf /var/cache/apk/* /tmp/*
 
 FROM scratch AS export

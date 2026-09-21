@@ -14,14 +14,22 @@ ARG PASSWORD=1
 COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 COPY scripts/lmi-native-firstboot.sh /usr/local/sbin/lmi-native-firstboot
 COPY scripts/lmi-native-firstboot.service /etc/systemd/system/lmi-native-firstboot.service
+COPY scripts/lmi-keys.service /etc/systemd/system/lmi-keys.service
+COPY scripts/lmi-wifi scripts/lmi-wifi-scan scripts/lmi-wifi-join scripts/lmi-wifi-status scripts/lmi-keys scripts/lmi-font-step /usr/local/bin/
+COPY scripts/consolefonts/ /usr/share/consolefonts/
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
-RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
+RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step && \
+    ln -sf /usr/local/bin/lmi-wifi /usr/local/bin/wifi && \
+    ln -sf /usr/local/bin/lmi-wifi-scan /usr/local/bin/wifi-scan && \
+    ln -sf /usr/local/bin/lmi-wifi-join /usr/local/bin/wifi-join && \
+    ln -sf /usr/local/bin/lmi-wifi-status /usr/local/bin/wifi-status && \
+    ln -sf /usr/local/bin/lmi-font-step /usr/local/bin/font-step && \
     zypper --non-interactive refresh && \
     zypper --non-interactive update && \
     zypper --non-interactive install --no-recommends \
       bash bash-completion ca-certificates coreutils curl dbus-1 dialog \
-      e2fsprogs file findutils gawk git grep jq kmod nano openssh procps sed sudo systemd timezone \
+      e2fsprogs file findutils gawk git grep jq kbd kmod nano openssh procps sed sudo systemd timezone \
       wget xz zstd \
       iproute2 iptables iputils net-tools NetworkManager wpa_supplicant iw bind-utils rfkill wireless-regdb && \
     if zypper --non-interactive search --match-exact fastfetch | grep -q '^i\\? | fastfetch '; then zypper --non-interactive install --no-recommends fastfetch; fi && \
@@ -53,7 +61,7 @@ RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/nu
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
     printf 'LMI_USER=%s\nLMI_AUTOLOGIN=false\n' "$USERNAME" > /etc/lmi-native.conf
 
-RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service || true && \
+RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service lmi-keys.service || true && \
     zypper clean --all && rm -rf /var/cache/zypp/* /tmp/*
 
 FROM scratch AS export

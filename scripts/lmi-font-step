@@ -1,0 +1,84 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# lmi-font-step - step virtual console font size up or down
+
+STATE_FILE=/run/lmi-font-level
+FONTS_DIR=/usr/share/consolefonts
+
+# Check if setfont exists
+if ! command -v setfont >/dev/null 2>&1; then
+    echo "lmi-font-step: setfont command not found (install kbd)" >&2
+    exit 1
+fi
+
+FONT_1="Uni2-TerminusBold16.psf.gz:16px"
+FONT_2="Uni2-TerminusBold20x10.psf.gz:20px"
+FONT_3="Uni2-TerminusBold24x12.psf.gz:24px"
+FONT_4="Uni2-TerminusBold28x14.psf.gz:28px"
+FONT_5="Uni2-TerminusBold32x16.psf.gz:32px"
+
+CURRENT_LEVEL=4
+if [ -f "$STATE_FILE" ]; then
+    val=$(cat "$STATE_FILE" 2>/dev/null)
+    case "$val" in
+        1|2|3|4|5) CURRENT_LEVEL=$val ;;
+    esac
+fi
+
+ACTION="${1:-show}"
+
+case "$ACTION" in
+    up|+*)
+        CURRENT_LEVEL=$((CURRENT_LEVEL + 1))
+        [ "$CURRENT_LEVEL" -gt 5 ] && CURRENT_LEVEL=5
+        ;;
+    down|-*)
+        CURRENT_LEVEL=$((CURRENT_LEVEL - 1))
+        [ "$CURRENT_LEVEL" -lt 1 ] && CURRENT_LEVEL=1
+        ;;
+    [1-5])
+        CURRENT_LEVEL=$ACTION
+        ;;
+    show|status)
+        echo "Current font level: $CURRENT_LEVEL/5"
+        exit 0
+        ;;
+    *)
+        echo "Usage: $0 [up|down|1..5|status]" >&2
+        exit 1
+        ;;
+esac
+
+echo "$CURRENT_LEVEL" > "$STATE_FILE"
+
+eval "INFO=\$FONT_${CURRENT_LEVEL}"
+FONT_FILE=$(echo "$INFO" | cut -d: -f1)
+FONT_DESC=$(echo "$INFO" | cut -d: -f2)
+
+FONT_PATH=""
+for dir in "$FONTS_DIR" /usr/share/kbd/consolefonts /lib/kbd/consolefonts /usr/local/share/consolefonts; do
+    if [ -f "$dir/$FONT_FILE" ]; then
+        FONT_PATH="$dir/$FONT_FILE"
+        break
+    fi
+done
+
+if [ -z "$FONT_PATH" ]; then
+    echo "lmi-font-step: font $FONT_FILE not found in search paths" >&2
+    exit 1
+fi
+
+APPLIED=0
+for dev in /dev/tty0 /dev/tty1 /dev/tty; do
+    if [ -e "$dev" ]; then
+        if setfont "$FONT_PATH" -C "$dev" 2>/dev/null; then
+            APPLIED=1
+        fi
+    fi
+done
+
+if [ $APPLIED -eq 0 ]; then
+    setfont "$FONT_PATH" 2>/dev/null || true
+fi
+
+echo "lmi-font-step: level $CURRENT_LEVEL/5 ($FONT_DESC, $FONT_FILE)"

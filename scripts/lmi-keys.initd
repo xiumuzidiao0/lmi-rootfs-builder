@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+# SPDX-License-Identifier: MIT
+
+name="lmi-keys"
+description="LMI Hardware Keys, Screen and Font Management"
+command="/usr/local/bin/lmi-keys"
+command_args="-t 300 -p 8"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/lmi-keys.log"
+error_log="/var/log/lmi-keys.log"
+
+depend() {
+	need localmount
+	after udev
+}

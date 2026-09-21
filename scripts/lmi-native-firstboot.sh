@@ -109,6 +109,7 @@ enable_if_exists systemd-resolved.service
 enable_if_exists systemd-timesyncd.service
 enable_if_exists chronyd.service
 enable_if_exists usbmuxd.service
+enable_if_exists lmi-keys.service
 enable_if_exists sddm.service
 
 disable_if_exists systemd-networkd-wait-online.service

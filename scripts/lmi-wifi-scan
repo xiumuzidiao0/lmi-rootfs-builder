@@ -1,0 +1,37 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# lmi-wifi-scan - scan and list available WiFi networks
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+IFACE="${LMI_WIFI_IFACE:-wlan0}"
+
+# 1. Prefer NetworkManager (nmcli) if running
+if command -v nmcli >/dev/null 2>&1 && nmcli general status >/dev/null 2>&1; then
+    echo "Scanning WiFi via NetworkManager..."
+    nmcli device wifi rescan 2>/dev/null || true
+    nmcli -f IN-USE,SSID,SIGNAL,BARS,SECURITY,CHAN dev wifi list
+    exit 0
+fi
+
+# 2. Fallback to iw
+if command -v iw >/dev/null 2>&1; then
+    if [ ! -e "/sys/class/net/$IFACE" ]; then
+        echo "Error: interface $IFACE missing" >&2
+        exit 1
+    fi
+    echo "Scanning WiFi on $IFACE (iw)..."
+    iw dev "$IFACE" scan 2>/dev/null | awk '
+        /^BSS /            { ssid=""; sig=""; priva=""; }
+        /^\tSSID: /        { ssid=substr($0, 8) }
+        /^\tsignal: /      { sig=$2 }
+        /^\tcapability: /  { if ($0 ~ /Privacy/) priva="WPA/WEP"; else priva="open" }
+        /^\tDS Parameter/  { chan=$5 }
+        ssid != "" && sig != "" {
+            printf "%-32s %6s dBm  chan %-3s %s\n", ssid, sig, chan, priva;
+            ssid="";
+        }' | sort -u | head -40
+    exit 0
+fi
+
+echo "Error: neither nmcli nor iw is available." >&2
+exit 1

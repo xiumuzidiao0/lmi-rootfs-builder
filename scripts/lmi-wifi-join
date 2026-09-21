@@ -1,0 +1,89 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# lmi-wifi-join - connect to a WiFi network at runtime
+#
+# usage: lmi-wifi-join <SSID> [PASSWORD|-]    ("-" or omitted = open network)
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+SSID="$1"
+PSK="$2"
+IFACE="${LMI_WIFI_IFACE:-wlan0}"
+
+if [ -z "$SSID" ]; then
+    echo "Usage: $0 <SSID> [PASSWORD|-]" >&2
+    echo "  Use '-' or omit password for open networks." >&2
+    exit 2
+fi
+
+# 1. Prefer NetworkManager (nmcli) if running
+if command -v nmcli >/dev/null 2>&1 && nmcli general status >/dev/null 2>&1; then
+    echo "Connecting to '$SSID' via NetworkManager..."
+    if [ -n "$IFACE" ] && [ -e "/sys/class/net/$IFACE" ]; then
+        IF_SPEC="ifname $IFACE"
+    else
+        IF_SPEC=""
+    fi
+
+    if [ -z "$PSK" ] || [ "$PSK" = "-" ]; then
+        # shellcheck disable=SC2086
+        nmcli dev wifi connect "$SSID" $IF_SPEC 2>/dev/null || nmcli dev wifi connect "$SSID"
+    else
+        # shellcheck disable=SC2086
+        nmcli dev wifi connect "$SSID" password "$PSK" $IF_SPEC 2>/dev/null || nmcli dev wifi connect "$SSID" password "$PSK"
+    fi
+    ret=$?
+    if [ $ret -eq 0 ]; then
+        echo "Successfully connected to '$SSID'."
+    else
+        echo "Failed to connect to '$SSID' via nmcli." >&2
+    fi
+    sleep 2
+    if command -v lmi-wifi-status >/dev/null 2>&1; then
+        lmi-wifi-status
+    fi
+    exit $ret
+fi
+
+# 2. Fallback to wpa_supplicant / wpa_cli
+CONF=/etc/wpa_supplicant/wpa_supplicant.conf
+
+quote() { printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"; }
+
+if command -v wpa_cli >/dev/null 2>&1 && wpa_cli -i "$IFACE" ping >/dev/null 2>&1; then
+    wpa_cli -i "$IFACE" list_networks 2>/dev/null |
+        awk -F'\t' -v s="$SSID" '$2 == s { print $1 }' |
+        while read -r id; do
+            [ -n "$id" ] && wpa_cli -i "$IFACE" remove_network "$id" >/dev/null 2>&1
+        done
+    id=$(wpa_cli -i "$IFACE" add_network 2>/dev/null | tail -n 1)
+    [ -n "$id" ] || { echo "wpa_cli add_network failed" >&2; exit 1; }
+    wpa_cli -i "$IFACE" set_network "$id" ssid "$(quote "$SSID")" >/dev/null
+    if [ "$PSK" = "-" ] || [ -z "$PSK" ]; then
+        wpa_cli -i "$IFACE" set_network "$id" key_mgmt NONE >/dev/null
+    else
+        wpa_cli -i "$IFACE" set_network "$id" psk "$(quote "$PSK")" >/dev/null
+    fi
+    wpa_cli -i "$IFACE" priority 20 >/dev/null 2>&1 || true
+    wpa_cli -i "$IFACE" enable_network "$id" >/dev/null
+    wpa_cli -i "$IFACE" save_config >/dev/null
+    wpa_cli -i "$IFACE" reassociate >/dev/null
+    echo "Joined '$SSID' (network id $id); config saved to $CONF"
+else
+    # wpa_supplicant not running: append to config file directly
+    if [ "$PSK" = "-" ] || [ -z "$PSK" ]; then
+        NET="network={\n\tssid=\"$SSID\"\n\tkey_mgmt=NONE\n\tpriority=20\n}"
+    else
+        NET="network={\n\tssid=\"$SSID\"\n\tpsk=\"$PSK\"\n\tkey_mgmt=WPA-PSK\n\tpriority=20\n}"
+    fi
+    mkdir -p "${CONF%/*}"
+    [ -f "$CONF" ] && cp -a "$CONF" "$CONF.bak.$(date +%Y%m%d%H%M%S)"
+    printf '\n%b\n' "$NET" >>"$CONF"
+    chmod 600 "$CONF"
+    echo "Appended '$SSID' to $CONF"
+fi
+
+sleep 3
+if command -v lmi-wifi-status >/dev/null 2>&1; then
+    lmi-wifi-status
+fi

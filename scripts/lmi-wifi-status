@@ -1,0 +1,45 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# lmi-wifi-status - show current WiFi connection status in one line
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+IFACE="${LMI_WIFI_IFACE:-wlan0}"
+
+# 1. Prefer NetworkManager (nmcli) if running
+if command -v nmcli >/dev/null 2>&1 && nmcli general status >/dev/null 2>&1; then
+    active_line=$(nmcli -t -f DEVICE,TYPE,STATE,CONNECTION dev 2>/dev/null | grep ":wifi:connected:" | head -n 1)
+    if [ -n "$active_line" ]; then
+        dev=$(echo "$active_line" | cut -d: -f1)
+        state=$(echo "$active_line" | cut -d: -f3)
+        conn=$(echo "$active_line" | cut -d: -f4)
+        ip4=$(ip -4 addr show "$dev" 2>/dev/null | awk '/inet /{print $2}' | head -n 1)
+        printf 'wifi: if=%s state=%s ssid=%s ip=%s\n' "$dev" "$state" "$conn" "${ip4:-none}"
+        exit 0
+    fi
+
+    # Wifi device present but not connected
+    wifi_dev=$(nmcli -t -f DEVICE,TYPE dev 2>/dev/null | grep ":wifi$" | head -n 1 | cut -d: -f1)
+    if [ -n "$wifi_dev" ]; then
+        state=$(cat "/sys/class/net/$wifi_dev/operstate" 2>/dev/null || echo "disconnected")
+        ip4=$(ip -4 addr show "$wifi_dev" 2>/dev/null | awk '/inet /{print $2}' | head -n 1)
+        printf 'wifi: if=%s state=%s ssid=none ip=%s\n' "$wifi_dev" "${state:-down}" "${ip4:-none}"
+        exit 0
+    fi
+fi
+
+# 2. Fallback checking sysfs / iw / wpa_cli
+if [ ! -e "/sys/class/net/$IFACE" ]; then
+    echo "wifi: interface $IFACE not found"
+    exit 1
+fi
+
+ip4=$(ip -4 addr show "$IFACE" 2>/dev/null | awk '/inet /{print $2}' | head -n 1)
+ssid=""
+if command -v iw >/dev/null 2>&1; then
+    ssid=$(iw dev "$IFACE" link 2>/dev/null | awk -F': ' '/SSID:/{print $2}')
+fi
+if [ -z "$ssid" ] && command -v wpa_cli >/dev/null 2>&1; then
+    ssid=$(wpa_cli -i "$IFACE" status 2>/dev/null | awk -F= '/^ssid=/{print $2}')
+fi
+state=$(cat "/sys/class/net/$IFACE/operstate" 2>/dev/null)
+printf 'wifi: if=%s state=%s ssid=%s ip=%s\n' "$IFACE" "${state:-?}" "${ssid:-none}" "${ip4:-none}"

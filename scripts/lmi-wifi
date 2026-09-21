@@ -1,0 +1,36 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# lmi-wifi - WiFi management CLI tool for LMI Linux Server
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+case "${1:-}" in
+    scan)
+        shift
+        exec lmi-wifi-scan "$@"
+        ;;
+    join|connect)
+        shift
+        exec lmi-wifi-join "$@"
+        ;;
+    status)
+        shift
+        exec lmi-wifi-status "$@"
+        ;;
+    -h|--help|help|"")
+        echo "Usage: wifi <scan|join|status> [args...]"
+        echo ""
+        echo "Commands:"
+        echo "  wifi scan                  Scan and list visible WiFi networks"
+        echo "  wifi join <SSID> [PASS|-]  Connect to a WiFi network ('-' or omit PASS for open)"
+        echo "  wifi status                Show current WiFi connection status"
+        echo ""
+        echo "Direct aliases available: lmi-wifi-scan, lmi-wifi-join, lmi-wifi-status"
+        echo "                        wifi-scan, wifi-join, wifi-status"
+        [ -z "${1:-}" ] && exit 0 || exit 0
+        ;;
+    *)
+        echo "Unknown command: $1" >&2
+        echo "Run 'wifi help' for usage." >&2
+        exit 1
+        ;;
+esac

@@ -16,6 +16,9 @@ ARG PASSWORD=1
 COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 COPY scripts/lmi-native-firstboot.sh /usr/local/sbin/lmi-native-firstboot
 COPY scripts/lmi-native-firstboot.service /etc/systemd/system/lmi-native-firstboot.service
+COPY scripts/lmi-keys.service /etc/systemd/system/lmi-keys.service
+COPY scripts/lmi-wifi scripts/lmi-wifi-scan scripts/lmi-wifi-join scripts/lmi-wifi-status scripts/lmi-keys scripts/lmi-font-step /usr/local/bin/
+COPY scripts/consolefonts/ /usr/share/consolefonts/
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
@@ -28,7 +31,7 @@ RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh &
       bash bash-completion ca-certificates coreutils curl dbus dialog fastfetch \
       file findutils gawk git grep jq kmod nano openssh procps-ng sed sudo systemd e2fsprogs \
       tzdata wget xz zstd \
-      iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb \
+      iproute2 iptables iputils net-tools networkmanager wpa_supplicant iw bind rfkill wireless-regdb kbd \
       usbutils usbmuxd libimobiledevice \
       bluez pipewire pipewire-alsa pipewire-pulse wireplumber \
       linux-firmware noto-fonts-cjk noto-fonts-emoji mesa mesa-utils vulkan-tools vulkan-freedreno v4l-utils && \
@@ -85,10 +88,22 @@ RUN if [ "$ENABLE_srf_ARG" = "true" ]; then \
 
 RUN mkdir -p /lib/firmware && cp -a /tmp/lmi-firmware/. /lib/firmware/ 2>/dev/null || true && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
-    printf 'LMI_USER=%s\nLMI_AUTOLOGIN=true\n' "$USERNAME" > /etc/lmi-native.conf
+    if [ "$BUILD_KDE" = "false" ]; then \
+      chmod +x /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step && \
+      ln -sf /usr/local/bin/lmi-wifi /usr/local/bin/wifi && \
+      ln -sf /usr/local/bin/lmi-wifi-scan /usr/local/bin/wifi-scan && \
+      ln -sf /usr/local/bin/lmi-wifi-join /usr/local/bin/wifi-join && \
+      ln -sf /usr/local/bin/lmi-wifi-status /usr/local/bin/wifi-status && \
+      ln -sf /usr/local/bin/lmi-font-step /usr/local/bin/font-step && \
+      printf 'LMI_USER=%s\nLMI_AUTOLOGIN=false\n' "$USERNAME" > /etc/lmi-native.conf; \
+    else \
+      rm -f /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step /etc/systemd/system/lmi-keys.service && \
+      printf 'LMI_USER=%s\nLMI_AUTOLOGIN=true\n' "$USERNAME" > /etc/lmi-native.conf; \
+    fi
 
 RUN systemctl enable lmi-native-firstboot.service sshd.service NetworkManager.service systemd-resolved.service systemd-timesyncd.service || true && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then systemctl enable sddm.service || true; fi && \
+    if [ "$BUILD_KDE" = "false" ]; then systemctl enable lmi-keys.service || true; fi && \
     rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/* /tmp/*
 
 FROM scratch AS export

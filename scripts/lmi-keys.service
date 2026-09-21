@@ -1,0 +1,13 @@
+[Unit]
+Description=LMI Hardware Keys, Screen and Font Management
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/lmi-keys -t 300 -p 8
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

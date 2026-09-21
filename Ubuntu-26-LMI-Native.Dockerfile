@@ -18,6 +18,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 COPY scripts/lmi-native-firstboot.sh /usr/local/sbin/lmi-native-firstboot
 COPY scripts/lmi-native-firstboot.service /etc/systemd/system/lmi-native-firstboot.service
+COPY scripts/lmi-keys.service /etc/systemd/system/lmi-keys.service
+COPY scripts/lmi-wifi scripts/lmi-wifi-scan scripts/lmi-wifi-join scripts/lmi-wifi-status scripts/lmi-keys scripts/lmi-font-step /usr/local/bin/
+COPY scripts/consolefonts/ /usr/share/consolefonts/
 COPY firmware/lmi/ /tmp/lmi-firmware/
 
 RUN chmod +x /usr/local/sbin/lmi-native-firstboot /etc/profile.d/ds-aliases.sh && \
@@ -30,7 +33,7 @@ RUN apt-get update && \
       file findutils gawk git grep jq kmod locales nano openssh-server procps sed sudo systemd-timesyncd \
       systemd-sysv tzdata udev wget xz-utils \
       e2fsprogs \
-      iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb \
+      iproute2 iptables iputils-ping net-tools network-manager wpasupplicant iw dnsutils rfkill wireless-regdb kbd \
       usbutils usbmuxd libimobiledevice-utils adb fastboot android-sdk-platform-tools-common \
       bluez bluetooth pulseaudio-utils pipewire pipewire-pulse wireplumber libspa-0.2-bluetooth \
       linux-firmware zstd \
@@ -126,13 +129,22 @@ RUN mkdir -p /etc/lmi-native /lib/firmware && \
       curl -fsSL -o /lib/firmware/rtl_bt/rtl8821c_config.bin https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rtl_bt/rtl8821c_config.bin; \
     fi && \
     find /lib/firmware -type f -name '*.zst' -exec zstd -df --rm {} + 2>/dev/null || true && \
-    cat > /etc/lmi-native.conf <<EOF
-LMI_USER=$USERNAME
-LMI_AUTOLOGIN=true
-EOF
+    if [ "$BUILD_KDE" = "false" ]; then \
+      chmod +x /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step && \
+      ln -sf /usr/local/bin/lmi-wifi /usr/local/bin/wifi && \
+      ln -sf /usr/local/bin/lmi-wifi-scan /usr/local/bin/wifi-scan && \
+      ln -sf /usr/local/bin/lmi-wifi-join /usr/local/bin/wifi-join && \
+      ln -sf /usr/local/bin/lmi-wifi-status /usr/local/bin/wifi-status && \
+      ln -sf /usr/local/bin/lmi-font-step /usr/local/bin/font-step && \
+      printf 'LMI_USER=%s\nLMI_AUTOLOGIN=false\n' "$USERNAME" > /etc/lmi-native.conf; \
+    else \
+      rm -f /usr/local/bin/lmi-wifi* /usr/local/bin/lmi-keys /usr/local/bin/lmi-font-step /etc/systemd/system/lmi-keys.service && \
+      printf 'LMI_USER=%s\nLMI_AUTOLOGIN=true\n' "$USERNAME" > /etc/lmi-native.conf; \
+    fi
 
 RUN systemctl enable lmi-native-firstboot.service ssh.service NetworkManager.service systemd-resolved.service systemd-timesyncd.service || true && \
     if [ "$BUILD_KDE" = "min" ] || [ "$BUILD_KDE" = "conc" ]; then systemctl enable sddm.service || true; fi && \
+    if [ "$BUILD_KDE" = "false" ]; then systemctl enable lmi-keys.service || true; fi && \
     systemctl disable systemd-networkd-wait-online.service 2>/dev/null || true && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 

@@ -88,6 +88,33 @@ Server 目标适合 SSH、网络、包管理器、轻量 rootfs、服务端环�
 - `openSUSE`、`AlmaLinux`、`RockyLinux` 使用 systemd 相关服务配置。
 - `Mint-22-LMI-Server` 是 Ubuntu 24.04 兼容目标。Linux Mint 没有稳定适合该 workflow 的官方 arm64 Docker 基础镜像，所以这里不是完整 Mint 用户态。
 
+### Server 特性与使用指引
+
+无桌面 Server 镜像针对手机纯终端环境内置了开箱即用的网络工具与实体硬件按键守护：
+
+#### 1. 终端极简 WiFi 管理
+无须敲冗长复杂的底层网络命令，终端直接支持快捷指令（`wifi` / `lmi-wifi`）：
+```bash
+# 扫描可见网络（显示信号强度、信道与加密方式）
+wifi scan
+
+# 连接 WiFi（密码为空或开放网络传 '-'）
+wifi join MyHomeWiFi 12345678
+wifi join OpenWiFi -
+
+# 查看当前连接的无线接口、SSID 与 IP 地址
+wifi status
+```
+
+#### 2. 实体按键交互与屏幕控制（`lmi-keys`）
+后台运行极轻量的原生静态守护服务：
+- **电源键**：
+  - **短按点按**：立即息屏/亮屏（背光置 0 或恢复先前亮度；触碰屏幕也可直接唤醒）；
+  - **长按 8 秒**：自动触发安全关机（依次尝试优雅关机和内核安全断电，避免直接长按导致 PMIC 硬件硬复位）。
+- **音量键**：
+  - **音量加 / 音量减**：直接增大或缩小屏幕虚拟控制台终端的输出字体大小（提供适合手机 1080p 屏幕的 Terminus 5 级平滑字号：16px、20px、24px、28px、32px）；
+  - **手动命令调节**：亦可在命令行或 SSH 会话中执行 `font-step up`、`font-step down` 或 `font-step 1~5` 进行设置。
+
 ## 常用构建参数
 
 GitHub Actions 页面可以配置：
